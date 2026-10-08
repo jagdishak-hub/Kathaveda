@@ -2,22 +2,21 @@ import random
 import streamlit as st
 from game_bank import QUIZ_BANK,CHARACTERS,DYNASTY,SEQUENCES
 from settings_ui import saved,save
+from game_levels import level_title,level_pool
 
 def games_ui():
  st.header('Games · read, remember and reason')
  mode=st.selectbox('Game',['Scripture Quiz','Guess the character','Build dynasty','Sequence of events'])
  book=st.selectbox('Choose your scripture quiz',['Gita','Narayaneeyam','Bhagavatam']) if mode=='Scripture Quiz' else 'All scriptures'
- level=st.select_slider('Level',options=list(range(1,26)),value=1)
- st.caption(f'Level {level} of 25 · '+('Moderate: use context and clues.' if level<=12 else 'Tough: fewer clues and more connections.'))
+ level=st.selectbox('Learning stage',list(range(1,26)),format_func=lambda n:f'{n:02d} · {level_title(book if mode=="Scripture Quiz" else "All scriptures",n)}')
+ st.caption(f'Stage {level} of 25 · '+('Build recognition and context.' if level<=8 else 'Connect characters, events and teachings.' if level<=18 else 'Close reading and cross-text reasoning.'))
  st.write('Choose an answer, check it, then press **Next challenge**. Refresh starts a new mix. Questions are kept steady while you answer.')
  deck=f'{mode}:{book}:{level}'
  state=st.session_state.get('_game')
  refresh=st.button('Refresh · different challenges',type='primary')
  if not state or state['deck']!=deck or refresh:
   pool=[q for q in QUIZ_BANK if q['book']==book] if mode=='Scripture Quiz' else list(CHARACTERS if mode=='Guess the character' else DYNASTY if mode=='Build dynasty' else SEQUENCES)
-  if mode=='Scripture Quiz' and level>12:
-   hard=[q for q in pool if q['hard']]
-   if len(hard)>=6:pool=hard
+  if mode=='Scripture Quiz':pool=level_pool(pool,book,level)
   previous=st.session_state.setdefault('_previous_rounds',{}).get(deck,[])
   fresh=[q for q in pool if q not in previous]
   if len(fresh)<6:fresh=pool
@@ -63,4 +62,4 @@ def games_ui():
    score=sum(state['scores']);st.metric('Round score',f'{score}/{len(items)}');st.progress(1.0)
    st.write('Refresh for another mix, or choose the next level.')
    if st.session_state.get('_profile'):save('game:'+deck,{'score':score,'total':len(items)})
- st.caption(f'{len(QUIZ_BANK)} authored quiz items · 25 levels for every game. Refresh avoids the previous round where the selected pool is large enough. Levels share a source-based bank; they are not 25 different scripture editions.')
+ st.caption(f'{len(QUIZ_BANK)} sourced quiz items · 25 named learning stages. Each scripture quiz changes focus as you move through its stages; later stages emphasise connections and close reading.')

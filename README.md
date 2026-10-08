@@ -24,7 +24,7 @@ Settings accepts all four provider keys: Gemini, OpenRouter, Groq and Grok. A pr
 
 ## Games and remaining work
 
-Scripture-specific quizzes, character clues, dynasty links and event sequences support refreshable rounds. The 25-position level selector currently maps to moderate/tough banks; it does not yet provide 25 distinct, carefully developed curricula. Broader question banks, full verified audio, specialist-reviewed simple meanings and complete source-edition coverage remain unfinished.
+Scripture-specific quizzes, character clues, dynasty links and event sequences support refreshable rounds. Each game has 25 named learning stages. Gita stages 1–18 follow its chapters; Narayaneeyam stages follow its early dasakams and episodes; Bhagavatam stages focus on source episodes before later connection rounds. Broader source coverage within every stage, full verified audio, specialist-reviewed simple meanings and complete source-edition coverage remain unfinished.
 
 ## Validation and imports
 

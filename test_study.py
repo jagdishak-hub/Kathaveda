@@ -20,13 +20,13 @@ class StudyTests(unittest.TestCase):
    bank=[q for q in QUIZ_BANK if q['book']==book]
    self.assertGreaterEqual(len(bank),25)
    for q in bank:self.assertTrue(q['reference']);self.assertTrue(q['why']);self.assertIn(q['answer'],range(len(q['choices'])))
-  app=AppTest.from_file('app.py').run();app.sidebar.radio[0].set_value('Games').run()
-  self.assertEqual(len(app.select_slider[0].options),25)
+  app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Games').click().run()
+  self.assertEqual(len(next(s for s in app.selectbox if s.label=='Learning stage').options),25)
   previous=app.session_state['_game']['items']
   next(b for b in app.button if b.label=='Refresh · different challenges').click().run()
   self.assertFalse(app.exception);self.assertTrue(all(q not in previous for q in app.session_state['_game']['items']))
  def test_reading_shiva_explanation(self):
-  app=AppTest.from_file('app.py').run();app.sidebar.radio[0].set_value('Reading room').run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva').run()
+  app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Reading room').click().run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva').run()
   self.assertFalse(app.exception)
   self.assertTrue(any('Prayaga' in m.value for m in app.markdown))
  def test_all_provider_fallbacks(self):
@@ -36,13 +36,13 @@ class StudyTests(unittest.TestCase):
    self.assertEqual((answer,provider),('Useful answer','Grok'))
    self.assertEqual([c.args[0] for c in call.call_args_list],[s[0] for s in settings])
  def test_story_opens_in_app(self):
-  app=AppTest.from_file('app.py').run();app.sidebar.radio[0].set_value('Reading room').run()
+  app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Reading room').click().run()
   next(t for t in app.text_input if t.label=='Find a story or character').set_value('Ajamila').run()
   next(b for b in app.button if b.key=='read_ajamila').click().run()
   self.assertFalse(app.exception)
   self.assertTrue(any('Ajamila heard their discussion' in m.value for m in app.markdown))
  def test_all_key_fields_visible(self):
-  app=AppTest.from_file('app.py').run();app.sidebar.radio[0].set_value('Settings').run()
+  app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Settings').click().run()
   self.assertFalse(app.exception)
   for provider in ['Gemini','OpenRouter','Groq','Grok']:
    self.assertTrue(any(t.label==provider+' API key' for t in app.text_input))

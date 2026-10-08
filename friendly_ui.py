@@ -6,6 +6,7 @@ from knowledge import CONTENT,works,passages
 from chapter_guides import GITA,BOOK_INTROS,SHIVA_READINGS
 from expansion import NEW_STORIES
 from reader_ui import reader_ui as source_reader
+from situation_bank import EXTRA_SCENARIOS
 STORIES=CONTENT['scriptures']['stories']+[{'id':sid,'title':title,'ref':ref,'themes':themes,'book':'Bhagavatam','text':body,'child':body,'reflection':question,'url':'https://vedabase.io/en/library/sb/'+ref.split('.')[0]+'/'+ref.split('.')[1].split('–')[0]+'/'} for sid,title,ref,themes,body,question in NEW_STORIES]
 _folk_file=Path(__file__).parent/'data/folk-stories.json.gz'
 if _folk_file.exists():
@@ -34,7 +35,7 @@ SCENARIOS=[
 ('Someone will not listen to me','Relationships',17,'Choose a calm time. Give one specific example and one clear request. If discussion remains unsafe or disrespectful, ask a trusted person for support.','Ask for a turn to explain your point rather than raising your voice over the other person.','relationships'),
 ('I envy a friend’s success','Confidence & setbacks',12,'Acknowledge the feeling privately. Congratulate the friend without making a comparison. Pick one thing you want to practise for your own growth.','You can celebrate a friend’s prize and still work towards a goal of your own.','self-worth'),
 ('I keep buying things to feel better','Habits & balance',15,'Delay the purchase for one day. Name the feeling behind it. Check whether a conversation, rest or a useful activity addresses that need better.','Boredom may need a walk or a project rather than another online order.','uncertainty'),
-('I need to begin again after a mistake','Confidence & setbacks',4,'Understand what went wrong. Make one concrete repair. Ask for guidance on the step that will prevent a repeat.','An apology followed by a changed routine gives others a reason to rebuild trust.','promises')]
+('I need to begin again after a mistake','Confidence & setbacks',4,'Understand what went wrong. Make one concrete repair. Ask for guidance on the step that will prevent a repeat.','An apology followed by a changed routine gives others a reason to rebuild trust.','promises')]+EXTRA_SCENARIOS
 
 def story_view(story):
  st.subheader(story['title']);st.caption(story['book']+' · '+story['ref'])

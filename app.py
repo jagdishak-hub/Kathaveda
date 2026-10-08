@@ -10,16 +10,16 @@ from settings_ui import profile_ui,settings_ui,active_settings,saved,save
 from chapter_guides import GITA
 ROOT=Path(__file__).parent
 st.set_page_config(page_title='The Reading Room · Learn and live',page_icon='🪷',layout='wide')
-st.markdown('''<style>.stApp {background:linear-gradient(130deg,#fff9f0,#f1edff 65%,#eefbf6)} h1,h2,h3{color:#633e83} div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffb8;border-radius:18px;border:1px solid #e5dbed;padding:4px} .block-container{max-width:1280px;padding-top:2rem} h3{font-size:1.2rem!important} button{border-radius:12px!important} div[data-testid="stSidebar"]{background:#f6f0fa} div[data-testid="stMetric"]{background:#fff8ed;padding:16px;border-radius:16px}  @media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} </style>''',unsafe_allow_html=True)
-st.sidebar.image(str(ROOT/'assets/logo.svg'),width=120)
+st.markdown('''<style>.stApp {background:linear-gradient(130deg,#fff9f0,#f1edff 65%,#eefbf6)} h1,h2,h3{color:#633e83} div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffb8;border-radius:18px;border:1px solid #e5dbed;padding:4px}.block-container{max-width:1280px;padding-top:2rem}h3{font-size:1.2rem!important}button{border-radius:12px!important}div[data-testid="stSidebar"]{background:linear-gradient(180deg,#2f2142 0%,#51315d 55%,#6d405b 100%)}div[data-testid="stSidebar"] *{color:#fff}div[data-testid="stSidebar"] img{display:block;margin:4px auto 0;filter:drop-shadow(0 7px 12px #140c1d55)}div[data-testid="stSidebar"] button{border:0!important;text-align:left!important;justify-content:flex-start!important;padding:.55rem .75rem!important;min-height:2.55rem;background:#ffffff12;color:#fff!important}div[data-testid="stSidebar"] button:hover{background:#ffffff25}div[data-testid="stSidebar"] button[kind="primary"]{background:linear-gradient(90deg,#f0ad55,#d56d84)!important;box-shadow:0 5px 16px #1b10234d;font-weight:700}.rr-side-name{text-align:center;font-family:Georgia,serif;font-weight:800;letter-spacing:.08em;font-size:1.05rem;margin-top:4px}.rr-side-line{text-align:center;color:#eadfec!important;font-size:.78rem;margin:2px 0 20px}.rr-side-group{font-size:.67rem;letter-spacing:.16em;color:#d9bfdc!important;margin:18px 4px 6px;font-weight:700}.rr-study-card{background:#ffffff12;border:1px solid #ffffff22;padding:12px;border-radius:14px;font-size:.82rem;line-height:1.45}.rr-study-card span{color:#e5d9e7!important}.rr-study-card hr{border:0;border-top:1px solid #ffffff25;margin:9px 0}div[data-testid="stMetric"]{background:#fff8ed;padding:16px;border-radius:16px}@media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} </style>''',unsafe_allow_html=True)
+st.sidebar.image(str(ROOT/'assets/logo.svg'),width=104)
 st.title('The Reading Room')
 st.caption('Read a story. Learn a verse. Find a helpful next step.')
-page=st.sidebar.radio('Explore',['Home','Reading room','Story garden','Learn & chant','Games','Converse','Situations','Settings','Coverage & sources'],key='page')
+from navigation import sidebar_navigation
+page=sidebar_navigation()
 # Profiles are optional; keep account setup out of the reading flow.
 if page=='Settings':profile_ui()
 elif st.session_state.get('_profile'):st.sidebar.caption('Study profile: '+st.session_state['_profile'])
 family=False
-st.sidebar.caption('Reading and prepared activities use the local database. Online conversation is optional.')
 W=works();titles={w['id']:w['title'] for w in W}
 G=CONTENT['guidance']['guidance'];S=STORIES
 journal=st.session_state.setdefault('_journal',{})
