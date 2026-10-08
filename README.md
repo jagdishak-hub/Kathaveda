@@ -1,40 +1,31 @@
-# KathaVeda — Streamlit rebuild
+# The Reading Room
 
-A family scripture-study app with a packaged local SQLite database. Reading, stories, situations, learning and quizzes work without AI calls. Conversation uses one online request, with at most one configured fallback.
+A family scripture-study companion for reading, learning, practical reflection and games. Built in Streamlit. Live: https://kathaveda-production.up.railway.app/
 
 ## Run
 
-Use Python 3.11 or newer:
+Use Python 3.12. Run `python -m pip install -r requirements.txt`, then `python build_database.py` and `python -m streamlit run app.py`. The database is reconstructed from the included attributed source archives and integrity-checked parts. No AI call is needed to read stored texts.
 
-```bash
-python -m pip install -r requirements.txt
-python -m streamlit run app.py
-```
+## Current reading library
 
-The packaged `data/scriptures.sqlite` database is ready to use. `python build_database.py` rebuilds it from the included attributed `data/corpus.json.gz` archive; no separate checkout or online download is required.
+30 attributed source collections and 9,485 nonempty reading units. Units can be verses, hymns, chapters or sections; this is not a story count. There are 26 prepared retellings and 29 historical collected folktales, kept distinct from scripture.
 
-## Host and share
+New editions include Annie Besant’s 1922 Sanskrit/English Gita (701 readings; chapter 13 includes an opening Arjuna question), GRETIL Ramayana, Rigveda and Narasimha Purana; historical English translations of Ramayana (Griffith, books 1–6), Vishnu Purana (Dutt/Wilson, six parts) and Mahabharata (Ganguli, all 18 books). Mahabharata source section numbers have internal gaps; scope is the electronic edition, not an independently collated complete critical text. Original numbering is retained.
 
-Upload this folder to a dedicated GitHub repository. On Streamlit Community Cloud, select that repository and `app.py` as the entry point. Alternatively deploy the included Dockerfile on Railway. Configure access for your intended audience and use the resulting hosted URL. This downloadable package is not itself a hosted URL.
+**The full set of Puranas is still incomplete.** Skanda is Reva-khanda; Shiva contains books 1 and 7; Matsya, Markandeya, Padma and Bhavishya are partial. Use Coverage & sources for edition details and gaps. The separate 801-link GRETIL discovery inventory is not imported text and includes non-Hindu literature.
 
-The app owner can configure `KATHAVEDA_OPENROUTER_API_KEY`, `KATHAVEDA_GEMINI_API_KEY`, `KATHAVEDA_GROQ_API_KEY` or `KATHAVEDA_GROK_API_KEY` as private hosting environment variables. These are never displayed in a widget. Alternatively personal keys can be entered in Conversation settings and retained only in the browser's server-side session. Do not commit real keys to GitHub. Choose a model that is available to your provider account; model identifiers and access can change. No valid provider key was available during development, so live online answers are not yet verified.
+Source text, historical translation, prepared explanation and modern application are labelled separately. Retellings and application guides await specialist review. Historical English can be difficult for children; it is not advertised as a simple modern translation. GRETIL rights are CC BY-NC-SA; Wikisource transcription rights and source-page public-domain conditions are recorded. Project Gutenberg translations retain full source licence text in the archives. Sanskrit Documents has separate personal-study/research terms: do not assume all transcriptions have unrestricted redistribution rights.
 
-## Coverage and authenticity
+## Learning and conversation
 
-The database contains 22 collections and 4,332 nonempty units (chapters or verses, depending on collection). Brahmavaivarta contains 275 chapters across all four khandas; Krishna-janma-khanda chapter 7 remains absent. Import counts and gaps are recorded in `data/import-status.json`. Use the app's **Coverage & sources** page for current counts, edition details, source links and rights.
+Learning supports sequential practice, meanings where available, self-recording and scheduled recall review. A linked human recording for Gita 2.48 is attributed but not teacher-verified. A full verified pronunciation course is still missing.
 
-**This is not a complete library of all Puranas.** Important partial collections include Skanda (Reva-khanda), Shiva (books 1 and 7), Matsya (1–176), Markandeya (selected 1–93), Padma and Bhavishya. Internal numbering gaps do not detect entirely missing books or missing chapters beyond the final stored number. Completeness must be checked against a specified edition, not inferred from catalogue titles or counts.
+Settings accepts all four provider keys: Gemini, OpenRouter, Groq and Grok. A preferred provider is tried first, followed by other configured providers until one succeeds. Model names are editable. API keys and progress can be saved in an encrypted study profile with a passphrase. Railway mounts persistent storage at `/data/study` via `KATHAVEDA_STUDY_DIR`. Private questions are not stored in the public chapter cache. Shared chapter explanations are generated once and reused. Real provider access has not been validated with a user key; fallback is tested with mocked responses.
 
-Original transcriptions are attributed to Sanskrit Wikisource, GRETIL and Sanskrit Documents. Ancient text, transcription rights and editorial interpretation are distinct. GRETIL exports retain CC BY-NC-SA attribution; Wikisource exports retain source-page attribution and CC BY-SA notices. Sanskrit Documents supplies personal-study/research transcriptions; consult its source reuse terms before public redistribution of those transcriptions. The package is intended for noncommercial study; do not assume every source has identical redistribution terms.
+## Games and remaining work
 
-English stories are prepared retellings, awaiting scholarly review. Selected meanings are explanatory paraphrases. Situations and worksheets are modern applications, not literal scripture quotations. No independently reviewed pronunciation recordings are included.
+Scripture-specific quizzes, character clues, dynasty links and event sequences support refreshable rounds. The 25-position level selector currently maps to moderate/tough banks; it does not yet provide 25 distinct, carefully developed curricula. Broader question banks, full verified audio, specialist-reviewed simple meanings and complete source-edition coverage remain unfinished.
 
-Learning and worksheet progress lasts for the session; download and restore learning progress, and download worksheets before closing. The app does not claim to store permanent personal accounts.
+## Validation and imports
 
-## Validation
-
-```bash
-python -m unittest test_app -q
-```
-
-Tests inspect database integrity, readable content and catalogue links; open all seven app sections; advance learning; check and advance a quiz; preserve questions when keys are absent; and exercise readable and malformed provider responses for all four providers. Provider calls are mocked in tests, not evidence of successful live API access.
+`python -m unittest test_app test_study -q` checks all pages, database integrity, reading, next-verse navigation, refreshable games, question retention, encryption and ordered provider fallback. Import scripts require `lxml`; normal app operation reads shipped archives and does not require it. Import scripts preserve source attribution and electronic edition numbering.

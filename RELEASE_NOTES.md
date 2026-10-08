@@ -1,11 +1,7 @@
-# Reader-first KathaVeda update
+# The Reading Room update
 
-The default reading room is now a searchable story gallery with nine cards per shelf. Full stories open in a focused in-app reading panel. Book exploration and original source editions have separate tabs. Profile setup appears only on Settings.
+Renamed the app, added a colourful animated Home page and book-and-lamp logo, and introduced clear navigation into reading, learning, situations, games and conversation.
 
-There are 26 prepared readings, including eight new original retellings based on Bhagavatam references. These are editorial readings awaiting specialist review, not complete scripture translations. The collection remains in expansion.
+Expanded the source database to 30 collections and 9,485 units, including historical English scripture editions and 29 collected folktales. English chapters open inside the tool. The Gita’s paired Sanskrit/English 1922 edition preserves its 701-verse numbering. New archives are split into integrity-checked parts for reproducible deployment.
 
-Situations has 36 specific difficulties, category and word filters, nine cards per page, a focused practical plan, everyday example, related story and a return button.
-
-Settings shows all four provider keys and models in one form. Save all keys stores them encrypted in an optional private study profile. The preferred provider runs first, then other configured providers run sequentially only after a failure. Successful answers stop further requests. Prepared chapter readings remain cached.
-
-Original corpus completeness and recording limitations remain shown in the app. No genuine provider API key was available for live answer verification. Automated tests cover all pages, story opening, note retention, all-key fields, ordered fallback, encryption and games.
+Added self-recording and scheduled verse review. Pronunciation audio coverage remains incomplete; no full teacher-verified course is claimed. Complete Purana coverage, specialist-reviewed simple meanings and 25 distinct game curricula remain unfinished. Live provider answers still require a configured working key.

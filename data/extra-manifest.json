@@ -1,0 +1,26 @@
+[
+  {
+    "file": "additional-sources.json.gz",
+    "folder": "extra-parts/additional-sources",
+    "sha256": "d1bed76f0751cd5132da158d2b7d4206ddfa9041b6679548b8b4dbe20f428e68",
+    "bytes": 1779126
+  },
+  {
+    "file": "gita-besant.json.gz",
+    "folder": "extra-parts/gita-besant",
+    "sha256": "eea16c56428a5f0cdce66ab420fc962e8be85da57a9c2f9a8f2c4b844a861428",
+    "bytes": 101045
+  },
+  {
+    "file": "gutenberg-sources.json.gz",
+    "folder": "extra-parts/gutenberg-sources",
+    "sha256": "4fdf5df5b06cbe1d6f8771dbbbfe391e7c0166119fe99beea7ab70a69cc1b0c1",
+    "bytes": 6457867
+  },
+  {
+    "file": "folk-stories.json.gz",
+    "folder": "extra-parts/folk-stories",
+    "sha256": "983a71b7821b744a0e9d4229b71e1167e4fc462c4e5b108e9b1feb5320cbea36",
+    "bytes": 247379
+  }
+]

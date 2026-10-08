@@ -9,12 +9,12 @@ from games_ui import games_ui
 from settings_ui import profile_ui,settings_ui,active_settings,saved,save
 from chapter_guides import GITA
 ROOT=Path(__file__).parent
-st.set_page_config(page_title='KathaVeda · Stories for life',page_icon='🪷',layout='wide')
+st.set_page_config(page_title='The Reading Room · Learn and live',page_icon='🪷',layout='wide')
 st.markdown('''<style>.stApp {background:linear-gradient(130deg,#fff9f0,#f1edff 65%,#eefbf6)} h1,h2,h3{color:#633e83} div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffb8;border-radius:18px;border:1px solid #e5dbed;padding:4px} .block-container{max-width:1280px;padding-top:2rem} h3{font-size:1.2rem!important} button{border-radius:12px!important} div[data-testid="stSidebar"]{background:#f6f0fa} div[data-testid="stMetric"]{background:#fff8ed;padding:16px;border-radius:16px}  @media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} </style>''',unsafe_allow_html=True)
 st.sidebar.image(str(ROOT/'assets/logo.svg'),width=120)
-st.title('🪷 KathaVeda')
+st.title('The Reading Room')
 st.caption('Read a story. Learn a verse. Find a helpful next step.')
-page=st.sidebar.radio('Explore',['Reading room','Story garden','Learn & chant','Games','Converse','Situations','Settings','Coverage & sources'])
+page=st.sidebar.radio('Explore',['Home','Reading room','Story garden','Learn & chant','Games','Converse','Situations','Settings','Coverage & sources'],key='page')
 # Profiles are optional; keep account setup out of the reading flow.
 if page=='Settings':profile_ui()
 elif st.session_state.get('_profile'):st.sidebar.caption('Study profile: '+st.session_state['_profile'])
@@ -34,11 +34,15 @@ def render_passage(r):
  if r.get('transliteration') and r['transliteration']!=r['original']:
   with st.expander('IAST transliteration'):st.text(r['transliteration'])
  meta=json.loads(r['metadata']);meaning=meta.get('meaning')
- if meaning and not meaning.startswith('An editorially reviewed'):st.info('Explanatory paraphrase: '+meaning)
+ if meaning and not meaning.startswith('An editorially reviewed'):st.info(('Historical translation: ' if r['work_id']=='gita-besant' else 'Explanatory paraphrase: ')+meaning)
  else:st.caption('A reviewed English meaning is not available for this passage.')
  st.caption(meta.get('reviewStatus','Source transcription; not independently collated'));source(r)
 
-if page=='Coverage & sources':
+if page=='Home':
+ from home_ui import home_ui
+ home_ui()
+
+elif page=='Coverage & sources':
  st.header('What is actually available?')
  st.warning('The full set of Puranas is not complete. These are attributed electronic transcriptions, not independently verified critical editions. A title in the catalogue does not mean every part is present.')
  report=audit();st.dataframe(report,hide_index=True,width='stretch')
@@ -67,8 +71,8 @@ elif page=='Situations':
 
 elif page=='Learn & chant':
  st.header('Learn a little, return often')
- courses=[i for i in ['vishnu','lalita','gita','narayaneeyam'] if i in titles]
- wid=st.selectbox('Course',courses,format_func=lambda i:titles[i]);units=passages(wid)
+ courses=[i for i in ['gita','gita-besant','vishnu','lalita','narayaneeyam'] if i in titles]
+ wid=st.selectbox('Course',courses,format_func=lambda i:titles[i],key='learning_course');units=passages(wid)
  position_key='position_'+wid
  if position_key not in st.session_state:st.session_state[position_key]=min(saved('chant-progress',{}).get(position_key,0),len(units)-1)
  def move(delta):st.session_state[position_key]=max(0,min(len(units)-1,st.session_state[position_key]+delta))
@@ -80,6 +84,8 @@ elif page=='Learn & chant':
  reveal=st.toggle('Show text while practising',value=True)
  if reveal:render_passage(r)
  else:st.info('Try from memory, then reveal the text to compare.')
+ from pronunciation_ui import pronunciation_ui
+ pronunciation_ui(r)
  def advance():
   st.session_state['practised_'+r['id']]=True;move(1);st.session_state['unit_'+wid]=st.session_state[position_key]+1
  a,b=st.columns(2)

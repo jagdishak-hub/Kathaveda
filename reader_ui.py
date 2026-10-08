@@ -44,16 +44,19 @@ def reader_ui():
  section=st.selectbox('Canto / book / section',sections,format_func=lambda s:'Main text' if not s else str(s))
  chapters=sorted({r['chapter'] for r in rows if r['section']==section})
  def label(ch):
-  if wid=='gita':return f'{ch}. {GITA[ch-1][0]}'
+  if wid in ('gita','gita-besant'):return f'{ch}. {GITA[ch-1][0]}'
+  first=next(r for r in rows if r['section']==section and r['chapter']==ch)
+  heading=json.loads(first['metadata']).get('readingTitle')
+  if heading:return f'{ch}. {heading}'
   stories=story_for(wid,section,ch)
   title=stories[0]['title'] if stories else SHIVA_READINGS.get((section,ch),('',''))[0] if wid=='shiva' else ''
   return f'Chapter {ch}'+(' · '+title if title else '')
  default=chapters.index(5) if wid=='bhagavatam' and section==1 and 5 in chapters else chapters.index(26) if wid=='narayaneeyam' and 26 in chapters else 0
  chapter=st.selectbox('Open a chapter',chapters,index=default,format_func=label)
  selected=[r for r in rows if r['section']==section and r['chapter']==chapter];original='\n\n'.join(r['original'] for r in selected)
- st.subheader(label(chapter));st.caption('Read here in KathaVeda. You do not need to open another website.')
+ st.subheader(label(chapter));st.caption('Read here in The Reading Room. You do not need to open another website.')
  available=False
- if wid=='gita':
+ if wid in ('gita','gita-besant'):
   title,body,action,ref,situation=GITA[chapter-1];st.markdown(body);st.info('Try this: '+action);st.caption('Plain-language chapter guide · focus passage: Bhagavad Gita '+ref);available=True
  elif wid=='shiva' and (section,chapter) in SHIVA_READINGS:
   title,body=SHIVA_READINGS[section,chapter];st.markdown(body);st.caption('Original explanatory retelling based on Shiva Purana '+str(section)+'.'+str(chapter)+' · awaiting specialist review');available=True
@@ -61,11 +64,18 @@ def reader_ui():
  for s in stories:
   st.markdown(s['text']);st.info('Think about this: '+s['reflection']);st.caption('Prepared retelling · '+s['book']+' '+s['ref']+' · awaiting specialist review');available=True
  cache_id='reading-v2:'+hashlib.sha256((wid+str(section)+str(chapter)+original).encode()).hexdigest()
+ if wid=='gita-besant':
+  for r in selected:
+   meta=json.loads(r['metadata']);st.markdown('**Verse '+str(r['verse'])+'**');st.write(meta.get('meaning',''));st.caption('Annie Besant · 1922 historical translation')
+ english=work.get('language')=='English'
+ if english:
+  for r in selected:st.markdown(r['original'])
+  st.caption('Attributed historical translation · '+work['edition']);available=True
  cached=STORE.cached(cache_id)
  if cached:
   with st.expander('Saved plain-language explanation',expanded=not available):st.markdown(cached['body']);st.caption('AI-assisted explanation · '+cached['provider']+' · not independently reviewed')
  elif not available:st.info('The original chapter is stored. Its English explanation has not been prepared yet. Prepare it once below; it will then be saved for later readers.')
- if st.button('Prepare and save a simple chapter explanation',disabled=bool(cached)):
+ if st.button('Prepare and save a simple chapter explanation',disabled=bool(cached) or english):
   try:
    with st.spinner('Preparing this chapter from its source text…'):prepare_explanation(cache_id,work['title']+' '+str(section)+'.'+str(chapter),original)
    st.rerun()

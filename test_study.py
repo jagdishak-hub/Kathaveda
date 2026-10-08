@@ -26,7 +26,7 @@ class StudyTests(unittest.TestCase):
   next(b for b in app.button if b.label=='Refresh · different challenges').click().run()
   self.assertFalse(app.exception);self.assertTrue(all(q not in previous for q in app.session_state['_game']['items']))
  def test_reading_shiva_explanation(self):
-  app=AppTest.from_file('app.py').run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva').run()
+  app=AppTest.from_file('app.py').run();app.sidebar.radio[0].set_value('Reading room').run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva').run()
   self.assertFalse(app.exception)
   self.assertTrue(any('Prayaga' in m.value for m in app.markdown))
  def test_all_provider_fallbacks(self):
@@ -36,7 +36,7 @@ class StudyTests(unittest.TestCase):
    self.assertEqual((answer,provider),('Useful answer','Grok'))
    self.assertEqual([c.args[0] for c in call.call_args_list],[s[0] for s in settings])
  def test_story_opens_in_app(self):
-  app=AppTest.from_file('app.py').run()
+  app=AppTest.from_file('app.py').run();app.sidebar.radio[0].set_value('Reading room').run()
   next(t for t in app.text_input if t.label=='Find a story or character').set_value('Ajamila').run()
   next(b for b in app.button if b.key=='read_ajamila').click().run()
   self.assertFalse(app.exception)

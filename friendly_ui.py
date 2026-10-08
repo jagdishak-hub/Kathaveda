@@ -1,11 +1,15 @@
 """Reader-first navigation and practical situation cards."""
-import html
+import html,gzip,json
+from pathlib import Path
 import streamlit as st
 from knowledge import CONTENT,works,passages
 from chapter_guides import GITA,BOOK_INTROS,SHIVA_READINGS
 from expansion import NEW_STORIES
 from reader_ui import reader_ui as source_reader
 STORIES=CONTENT['scriptures']['stories']+[{'id':sid,'title':title,'ref':ref,'themes':themes,'book':'Bhagavatam','text':body,'child':body,'reflection':question,'url':'https://vedabase.io/en/library/sb/'+ref.split('.')[0]+'/'+ref.split('.')[1].split('–')[0]+'/'} for sid,title,ref,themes,body,question in NEW_STORIES]
+_folk_file=Path(__file__).parent/'data/folk-stories.json.gz'
+if _folk_file.exists():
+ with gzip.open(_folk_file,'rt',encoding='utf-8') as _f:STORIES.extend(json.load(_f)['stories'])
 SCENARIOS=[
 ('I keep putting off a task','Learning & work',3,'Pick a task that takes ten minutes. Write its first physical step. Set a timer and start before judging the whole project.','A student delays a large assignment. Opening the document and writing three headings makes a manageable start.','learning'),
 ('I am scared to ask a question','Learning & work',4,'Write the exact part you do not understand. Ask one person to explain that part. Repeat the explanation back in your own words.','Instead of saying “I understand nothing,” ask “Why does this step come before that one?”','learning'),
@@ -36,7 +40,7 @@ def story_view(story):
  st.subheader(story['title']);st.caption(story['book']+' · '+story['ref'])
  st.markdown(story['text']);st.info('Think about it: '+story['reflection'])
  with st.expander('Source and reading notes'):
-  st.caption('Original editorial retelling, not a word-for-word translation. Specialist review is pending. Modern applications are suggestions, not direct scripture commands.')
+  st.caption('Historical collected folktale by Joseph Jacobs (1892). Folklore is separate from scripture; older language and cultural assumptions need context.' if story.get('genre')=='Folklore' else 'Original editorial retelling, not a word-for-word translation. Specialist review is pending. Modern applications are suggestions, not direct scripture commands.')
   st.code(story['url'],language=None)
  if st.button('Talk about this story',key='talk_'+story['id']):
   st.session_state['_conversation_question']='Help me understand '+story['title']+' and apply its teaching today.'
@@ -79,10 +83,18 @@ def reading_room():
     elif wid=='shiva':
      chapter=st.selectbox('Prepared Shiva Purana readings',list(SHIVA_READINGS),format_func=lambda k:SHIVA_READINGS[k][0]);st.markdown(SHIVA_READINGS[chapter][1])
     else:
-     choices=STORIES if wid=='bhagavatam' else [s for s in STORIES if s['id'] in ('gajendra','narayaneeyam')]
+     choices=[s for s in STORIES if s['book']=='Bhagavatam'] if wid=='bhagavatam' else [s for s in STORIES if s['id'] in ('gajendra','narayaneeyam')]
      sid=st.selectbox('Choose a reading',[s['id'] for s in choices],format_func=lambda i,readings=choices:next(s['title'] for s in readings if s['id']==i),key='book_'+wid)
      s=next(s for s in choices if s['id']==sid);st.markdown(s['text']);st.caption(s['book']+' '+s['ref'])
   st.caption('Other Purana source texts are available in Original scripture texts. Prepared English readings are still being expanded; collection coverage is listed with each edition.')
+  st.subheader('Full English editions')
+  english=[w for w in works() if w.get('language')=='English']
+  if english:
+   eid=st.selectbox('Choose an English book',[w['id'] for w in english],format_func=lambda i:next(w['title'] for w in english if w['id']==i))
+   readings=passages(eid);books=sorted({r['section'] for r in readings});book=st.selectbox('Book / part',books)
+   readings=[r for r in readings if r['section']==book]
+   rid=st.selectbox('Choose a chapter or tale',[r['id'] for r in readings],format_func=lambda i:next(r['reference'] for r in readings if r['id']==i))
+   reading=next(r for r in readings if r['id']==rid);st.markdown(reading['original']);st.caption('Historical English edition; older vocabulary. Source: '+reading['source_url'])
  with source_tab:source_reader()
 
 def situations_ui():
