@@ -53,13 +53,14 @@ def reading_room():
  a,b,c=st.columns(3);a.metric('Stories ready to read',len(STORIES));b.metric('Gita chapter guides',18);c.metric('Scripture collections',len(works()))
  stories_tab,books_tab,source_tab=st.tabs(['📖 Stories to read','📚 Explore books','🕉 Original scripture texts'])
  with stories_tab:
-  term=st.text_input('Find a story or character',placeholder='Try Krishna, Dhruva, kindness…')
-  theme=st.selectbox('What interests you?',['All themes']+sorted({t for s in STORIES for t in s['themes']}))
+  find_col,theme_col,shelf_col=st.columns([2,2,1])
+  term=find_col.text_input('Find a story or character',placeholder='Try Krishna, Dhruva, kindness…')
+  theme=theme_col.selectbox('What interests you?',['All themes']+sorted({t for s in STORIES for t in s['themes']}))
   filtered=[s for s in STORIES if (theme=='All themes' or theme in s['themes']) and (not term or term.lower() in (s['title']+' '+s['text']).lower())]
   if not filtered:st.info('No story matches these filters. Try another word or choose All themes.')
   st.caption(f'{len(filtered)} readings · choose a card to open the full story')
   pages=max(1,(len(filtered)+8)//9)
-  page=st.selectbox('Story shelf',range(1,pages+1),format_func=lambda n:f'Shelf {n} of {pages}')
+  page=shelf_col.selectbox('Story shelf',range(1,pages+1),format_func=lambda n:f'Shelf {n} of {pages}')
   filtered=filtered[(page-1)*9:page*9]
   selected=st.session_state.get('_open_story')
   for start in range(0,len(filtered),3):
@@ -88,8 +89,9 @@ def situations_ui():
  st.header('What would help you today?')
  st.write('Choose a difficulty. Start with one practical step, then explore the teaching and a related story.')
  groups=['All situations','Decisions & change','Relationships','Learning & work','Confidence & setbacks','Habits & balance','Care & connection']
- group=st.selectbox('Browse by need',groups)
- search=st.text_input('Find your situation',placeholder='Try anger, exam, tired, decision…')
+ group_col,search_col=st.columns(2)
+ group=group_col.selectbox('Browse by need',groups)
+ search=search_col.text_input('Find your situation',placeholder='Try anger, exam, tired, decision…')
  existing=CONTENT['guidance']['guidance']
  cards=[{'id':g['id'],'title':g['title'],'group':'Everyday difficulties','legacy':g} for g in existing]+[{'id':'scenario-'+str(i),'title':s[0],'group':s[1],'scenario':s} for i,s in enumerate(SCENARIOS)]
  filtered=[c for c in cards if (group=='All situations' or c['group']==group) and (not search or search.lower() in c['title'].lower())]
