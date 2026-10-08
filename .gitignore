@@ -7,3 +7,4 @@ data/scriptures.sqlite
 data/corpus.json.gz
 public/
 assets/logo.png
+study-data/

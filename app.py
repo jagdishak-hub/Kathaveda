@@ -3,14 +3,18 @@ from pathlib import Path
 import streamlit as st
 from knowledge import CONTENT,works,passages,search,audit
 from providers import CONFIG,discuss,ProviderError
-from quiz import QUESTIONS
+from reader_ui import reader_ui,prepare_explanation
+from games_ui import games_ui
+from settings_ui import profile_ui,settings_ui,active_settings,saved,save
+from chapter_guides import GITA
 ROOT=Path(__file__).parent
 st.set_page_config(page_title='KathaVeda · Stories for life',page_icon='🪷',layout='wide')
 st.markdown('''<style>.stApp {background:linear-gradient(130deg,#fff9f0,#f1edff 65%,#eefbf6)} h1,h2,h3{color:#633e83} div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffb8;border-radius:18px} @media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} </style>''',unsafe_allow_html=True)
 st.sidebar.image(str(ROOT/'assets/logo.svg'),width=120)
 st.title('🪷 KathaVeda')
 st.caption('Stories, study and thoughtful practice — together as a family')
-page=st.sidebar.radio('Explore',['Situations','Story garden','Reading room','Learn & chant','Quiz studio','Converse','Coverage & sources'])
+page=st.sidebar.radio('Explore',['Reading room','Story garden','Learn & chant','Games','Converse','Situations','Settings','Coverage & sources'])
+profile_ui()
 family=st.sidebar.toggle('Younger reader explanations',value=False)
 st.sidebar.caption('Reading and prepared activities use the local database. Online conversation is optional.')
 W=works();titles={w['id']:w['title'] for w in W}
@@ -44,22 +48,7 @@ if page=='Coverage & sources':
    st.link_button('Source edition',w['sourceUrl'])
 
 elif page=='Reading room':
- st.header('Read the original text')
- wid=st.selectbox('Collection',[w['id'] for w in W],format_func=lambda i:titles[i])
- work=next(w for w in W if w['id']==wid);st.info(work.get('coverage','Coverage not verified'))
- rows=passages(wid);sections=sorted({r['section'] for r in rows})
- section=st.selectbox('Book / khanda number',sections,format_func=lambda i:'Unsectioned source' if i==0 else str(i))
- chapters=sorted({r['chapter'] for r in rows if r['section']==section});chapter=st.selectbox('Chapter',chapters)
- selected=[r for r in rows if r['section']==section and r['chapter']==chapter]
- if len(selected)>1:
-  index=st.selectbox('Verse / reading unit',range(len(selected)),format_func=lambda i:selected[i]['reference']);render_passage(selected[index])
- else:render_passage(selected[0])
- term=st.text_input('Search original text, reference or indexed keywords')
- if term:
-  found=search(term)
-  if not found:st.info('No matching stored text. Search is literal; it does not infer translations.')
-  for r in found:
-   with st.expander(r['reference']):render_passage(r)
+ reader_ui()
 
 elif page=='Story garden':
  st.header('Take time with a story')
@@ -72,6 +61,9 @@ elif page=='Story garden':
 
 elif page=='Situations':
  st.header('A situation you are facing')
+ with st.expander('Find a teaching by Gita chapter'):
+  chapter=st.selectbox('Chapter teaching',range(1,19),format_func=lambda n:f'{n}. {GITA[n-1][0]} · {GITA[n-1][4]}')
+  guide=GITA[chapter-1];st.write(guide[1]);st.info('Try this: '+guide[2]);st.caption('Bhagavad Gita '+guide[3])
  for start in range(0,len(G),3):
   for col,card in zip(st.columns(3),G[start:start+3]):
    with col.container(border=True):
@@ -112,7 +104,7 @@ elif page=='Learn & chant':
  courses=[i for i in ['vishnu','lalita','gita','narayaneeyam'] if i in titles]
  wid=st.selectbox('Course',courses,format_func=lambda i:titles[i]);units=passages(wid)
  position_key='position_'+wid
- if position_key not in st.session_state:st.session_state[position_key]=0
+ if position_key not in st.session_state:st.session_state[position_key]=min(saved('chant-progress',{}).get(position_key,0),len(units)-1)
  def move(delta):st.session_state[position_key]=max(0,min(len(units)-1,st.session_state[position_key]+delta))
  if 'unit_'+wid not in st.session_state:st.session_state['unit_'+wid]=st.session_state[position_key]+1
  idx=st.number_input('Current reading unit',1,len(units),key='unit_'+wid)
@@ -127,7 +119,17 @@ elif page=='Learn & chant':
  a,b=st.columns(2)
  a.button('Previous unit',on_click=lambda:(move(-1),st.session_state.update({'unit_'+wid:st.session_state[position_key]+1})),disabled=idx==1)
  b.button('Practised · learn next',on_click=advance,disabled=idx==len(units))
- st.caption('Progress is kept in this browser session. Download it before closing. Narayaneeyam is grouped by dasakam; pronunciation audio has not been supplied or verified.')
+ if st.session_state.get('_profile') and st.button('Save learning progress to my profile'):
+  save('chant-progress',{k:v for k,v in st.session_state.items() if k.startswith(('position_','practised_'))});st.success('Progress saved.')
+ st.caption('Use the same profile to save progress across visits. Narayaneeyam is grouped by dasakam. Recorded pronunciation is still being assembled; do not treat generated speech as a pronunciation teacher.')
+ with st.expander('Pronunciation essentials'):
+  st.write('ā, ī and ū are long vowels: hold them longer than a, i and u. In kh, gh, th and dh, h marks a breath after the consonant. ṭ and ḍ use the tongue curled back. Listen to a trained reciter before practising a difficult word.')
+ with st.expander('Understand this verse or reading unit'):
+  st.caption('A saved AI-assisted explanation is a study aid, awaiting review.')
+  if st.button('Prepare / open the meaning'):
+   try:
+    meaning=prepare_explanation('learning:'+r['id'],r['reference'],r['original'],'verse');st.markdown(meaning['body'] if isinstance(meaning,dict) else meaning)
+   except ProviderError as e:st.error(str(e))
  progress={k:v for k,v in st.session_state.items() if k.startswith(('position_','practised_'))}
  st.download_button('Download my progress',json.dumps(progress),'chant-progress.json','application/json')
  uploaded=st.file_uploader('Restore my progress',type=['json'])
@@ -143,45 +145,23 @@ elif page=='Learn & chant':
  if uploaded:st.button('Restore',on_click=restore)
  if st.session_state.get('restore_error'):st.error(st.session_state['restore_error'])
 
-elif page=='Quiz studio':
- st.header('Read, reason, then check')
- level=st.selectbox('Challenge level',['Growing readers','Reflective readers','Close readers'])
- if st.button('Start a new round') or 'round' not in st.session_state or st.session_state.get('round_level')!=level:
-  pool=[q for q in QUESTIONS if q['level']==level];random.shuffle(pool)
-  st.session_state.update({'round':pool[:6],'round_level':level,'answers':{},'question_index':0,'order':{}})
- round_=st.session_state['round'];index=st.session_state['question_index']
- st.caption(f'{level} · question {index+1} of {len(round_)} · {len(QUESTIONS)} curated questions across three levels')
- q=round_[index]
- if index not in st.session_state['order']:
-  order=list(range(len(q['choices'])));random.shuffle(order);st.session_state['order'][index]=order
- order=st.session_state['order'][index];st.subheader(q['prompt'])
- selected=st.radio('Your answer',order,format_func=lambda i:q['choices'][i],key=f'choice_{level}_{index}')
- if st.button('Check reasoning'):st.session_state['answers'][index]=selected
- if index in st.session_state['answers']:
-  correct=st.session_state['answers'][index]==q['answer']
-  (st.success if correct else st.info)('Correct.' if correct else 'Revisit this distinction. The supported answer is: '+q['choices'][q['answer']])
-  st.write(q['why']);st.caption(q['reference'])
-  if index<len(round_)-1 and st.button('Next challenge'):st.session_state['question_index']+=1;st.rerun()
-  elif index==len(round_)-1:
-   score=sum(v==round_[i]['answer'] for i,v in st.session_state['answers'].items());st.metric('Round score',f'{score}/{len(round_)}')
-   st.write('Review these sources:')
-   for i,v in st.session_state['answers'].items():
-    if v!=round_[i]['answer']:st.write('• '+round_[i]['reference']+' — '+round_[i]['why'])
+elif page=='Games':
+ games_ui()
+
+elif page=='Settings':
+ settings_ui()
 
 elif page=='Converse':
  st.header('Continue the conversation')
- st.caption('Online discussion uses a key configured by the app owner, or an optional personal key for this session. Keys are not written to the database. Prepared reading and learning do not use them.')
- with st.expander('Conversation settings',expanded=True):
-  provider=st.selectbox('Primary provider',list(CONFIG));key=st.text_input('Optional personal API key',type='password',key='key_'+provider)
-  key=key or os.environ.get('KATHAVEDA_'+provider.upper()+'_API_KEY','')
-  if key:st.caption('A provider key is available for this session.')
-  model=st.text_input('Model',value=CONFIG[provider][1],key='model_'+provider)
-  fallback=st.selectbox('Optional fallback',['None']+[p for p in CONFIG if p!=provider])
-  fallback_key=(st.text_input('Optional personal fallback API key',type='password',key='fallback_key_'+fallback) or os.environ.get('KATHAVEDA_'+fallback.upper()+'_API_KEY','')) if fallback!='None' else ''
-  fallback_model=st.text_input('Fallback model',value=CONFIG[fallback][1],key='fallback_model_'+fallback) if fallback!='None' else ''
+ st.caption('Connect a provider in Settings. Open your study profile to reuse securely saved keys.')
+ settings=active_settings()
+ provider,key,model=settings[0]
+ if not key:st.info('No conversation key is connected. Go to Settings to enter one; prepared answers still work without AI.')
  if 'history' not in st.session_state:st.session_state['history']=[]
  for m in st.session_state['history']:
   with st.chat_message(m['role']):st.markdown(m['content'])
+ if st.session_state.get('_conversation_question'):
+  st.session_state['pending_question']=st.session_state.pop('_conversation_question')
  question=st.text_area('Your question',key='pending_question')
  if st.button('Send question',disabled=not question.strip()):
   prepared=next((a for a in CONTENT['corpus']['corpusAnswers'] if a['question']==question.lower().strip().rstrip('?!.') and not a['id'].startswith('guidance-')),None)
@@ -189,7 +169,7 @@ elif page=='Converse':
   gid=st.session_state.get('conversation_context');g=next((g for g in G if g['id']==gid),None)
   if g:
    context=[r for r in passages('gita') if r['reference'].removeprefix('Bhagavad Gita ') in g['gita']]+context
-  settings=[(provider,key,model)]+([(fallback,fallback_key,fallback_model)] if fallback_key else [])
+  if st.session_state.get('_reading_context'):context=st.session_state['_reading_context']+context
   try:
    if prepared:answer,used=prepared['answer'],'prepared local answer (no AI call)'
    else:
@@ -199,7 +179,7 @@ elif page=='Converse':
    st.caption('Answered by '+used+('' if prepared else ' · model interpretation, not an independently reviewed commentary'))
    for i,r in enumerate(context,1):st.markdown(f'[{i}] [{r["reference"]}]({r["source_url"]})')
   except ProviderError as e:st.error(str(e))
- if st.button('Clear conversation and keys'):
+ if st.button('Clear conversation'):
   for k in list(st.session_state):
-   if k.startswith(('key_','fallback_key_')) or k in ('history','pending_question'):del st.session_state[k]
+   if k in ('history','pending_question'):del st.session_state[k]
   st.rerun()

@@ -1,4 +1,4 @@
-"""One online call per question; optional single fallback. Keys never persisted."""
+"""One online call per question; optional single fallback. Keys are supplied by the encrypted profile settings layer."""
 import json,urllib.request,urllib.error,urllib.parse
 CONFIG={
  'OpenRouter':('https://openrouter.ai/api/v1/chat/completions','openrouter/auto'),
@@ -7,7 +7,7 @@ CONFIG={
  'Grok':('https://api.x.ai/v1/chat/completions','grok-4.7')}
 class ProviderError(Exception):pass
 def request(provider,key,model,messages,opener=urllib.request.urlopen):
- if not key:raise ProviderError('Enter an API key in Conversation settings to discuss further.')
+ if not key:raise ProviderError('Enter an API key in Settings to discuss further.')
  url=CONFIG[provider][0];headers={'Content-Type':'application/json'}
  if provider=='Gemini':
   url+=urllib.parse.quote(model,safe='')+':generateContent';headers['x-goog-api-key']=key
@@ -29,8 +29,8 @@ def request(provider,key,model,messages,opener=urllib.request.urlopen):
  except (ValueError,KeyError,IndexError,TypeError):raise ProviderError('The provider returned no readable answer. Your question is kept; try another model.') from None
 
 def discuss(question,context,history,settings):
- sources='\n\n'.join(f"[{i+1}] {r['reference']}\n{r['original'][:5000]}" for i,r in enumerate(context))
- system='You are a warm scripture study companion for Hindu families. Ask clarifying questions when useful. Distinguish source text, tradition-specific interpretation and modern practical advice. Do not invent quotations, verses, Sanskrit, references, or guarantees of divine rewards. If retrieved text does not support a claim, say so. Cite only supplied numbered sources. Be suitable for children when requested. Explain in plain language.\nRetrieved original passages:\n'+sources
+ sources='\n\n'.join(f"[{i+1}] {r['reference']}\n{r['original'][:5000]}" for i,r in enumerate(context[:6]))
+ system='You are a warm scripture study companion for Hindu families. Ask clarifying questions when useful. Distinguish source text, tradition-specific interpretation and modern practical advice. Do not invent quotations, verses, Sanskrit, references, or guarantees of divine rewards. If retrieved text does not support a claim, say so. Cite only supplied numbered sources. Be suitable for children when requested. Use short sentences and familiar words suitable for kids and elders. Explain Sanskrit terms when first used. For a life problem: briefly acknowledge the difficulty, explain one supported teaching, give three concrete steps the person can try today, and one everyday example. Avoid abstract philosophical speeches. Do not tell someone to accept abuse or replace professional help with chanting. For a story or verse, explain the events and meaning before any modern application.\nRetrieved original passages:\n'+sources
  messages=[{'role':'system','content':system}]+history[-8:]+[{'role':'user','content':question}]
  attempts=[]
  for provider,key,model in settings[:2]:

@@ -24,7 +24,7 @@ class Tests(unittest.TestCase):
    with self.assertRaises(ProviderError):request(provider,'test-key',CONFIG[provider][1],[],opener=lambda *a,**k:Response(b'<html>sign in</html>'))
  def test_every_page(self):
   app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run(timeout=20)
-  for page in ['Situations','Story garden','Reading room','Learn & chant','Quiz studio','Converse','Coverage & sources']:
+  for page in ['Situations','Story garden','Reading room','Learn & chant','Games','Converse','Settings','Coverage & sources']:
    app.sidebar.radio[0].set_value(page).run(timeout=20);self.assertFalse(app.exception,page)
  def test_learning_advances(self):
   app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run();app.sidebar.radio[0].set_value('Learn & chant').run()
@@ -32,11 +32,12 @@ class Tests(unittest.TestCase):
   next(b for b in app.button if b.label=='Practised · learn next').click().run()
   self.assertFalse(app.exception);self.assertEqual(app.number_input[0].value,before+1)
  def test_quiz_feedback_next(self):
-  app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run();app.sidebar.radio[0].set_value('Quiz studio').run()
-  next(b for b in app.button if b.label=='Check reasoning').click().run()
+  app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run();app.sidebar.radio[0].set_value('Games').run()
+  app.radio[0].set_value(app.radio[0].options[0]).run()
+  next(b for b in app.button if b.label=='Check answer').click().run()
   self.assertFalse(app.exception)
   next(b for b in app.button if b.label=='Next challenge').click().run()
-  self.assertFalse(app.exception);self.assertEqual(app.session_state['question_index'],1)
+  self.assertFalse(app.exception);self.assertEqual(app.session_state['_game']['index'],1)
  def test_no_key_keeps_question(self):
   app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run();app.sidebar.radio[0].set_value('Converse').run()
   app.text_area[0].set_value('How can I decide?').run();next(b for b in app.button if b.label=='Send question').click().run()
@@ -46,7 +47,7 @@ class Tests(unittest.TestCase):
   app.text_area[0].set_value('What is Narayaneeyam?').run();next(b for b in app.button if b.label=='Send question').click().run()
   self.assertFalse(app.exception);self.assertFalse(app.error);self.assertTrue(app.session_state['history'])
  def test_notes_survive_navigation(self):
-  app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run()
+  app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run();app.sidebar.radio[0].set_value('Situations').run()
   area=next(t for t in app.text_area if t.key=='decisions_step0');area.set_value('Compare two realistic options').run()
   app.sidebar.radio[0].set_value('Reading room').run();app.sidebar.radio[0].set_value('Situations').run()
   self.assertFalse(app.exception);self.assertEqual(next(t for t in app.text_area if t.key=='decisions_step0').value,'Compare two realistic options')
