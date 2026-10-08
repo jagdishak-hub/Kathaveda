@@ -1,9 +1,11 @@
-# KathaVeda study rebuild
+# Reader-first KathaVeda update
 
-Reading room opens book introductions, chapter selection, prepared English retellings and original text within the app. Gita has 18 chapter guides. New explanations use one provider request, with at most one fallback, and are saved for reuse. AI explanations are labelled as awaiting review.
+The default reading room is now a searchable story gallery with nine cards per shelf. Full stories open in a focused in-app reading panel. Book exploration and original source editions have separate tabs. Profile setup appears only on Settings.
 
-Games include separate Gita, Narayaneeyam and Bhagavatam quizzes, character clues, family relationships and event sequences. There are 176 quiz items and 25 selectable levels per game. Levels share question banks; moderate and tough bands change clues and challenge size.
+There are 26 prepared readings, including eight new original retellings based on Bhagavatam references. These are editorial readings awaiting specialist review, not complete scripture translations. The collection remains in expansion.
 
-Private study profiles encrypt saved API keys with a passphrase-derived key. Use Settings to connect a provider; save settings and reopen the same profile on later visits. Hosting requires a persistent /data volume and KATHAVEDA_STUDY_DIR=/data/study.
+Situations has 36 specific difficulties, category and word filters, nine cards per page, a focused practical plan, everyday example, related story and a return button.
 
-Limitations: the 22 collections are not all complete editions. Most chapters do not yet have prepared English explanations. The source inventory remains visible. Complete, reviewed verse meanings and recorded pronunciation are not yet available. No live provider response has been verified with a real API key.
+Settings shows all four provider keys and models in one form. Save all keys stores them encrypted in an optional private study profile. The preferred provider runs first, then other configured providers run sequentially only after a failure. Successful answers stop further requests. Prepared chapter readings remain cached.
+
+Original corpus completeness and recording limitations remain shown in the app. No genuine provider API key was available for live answer verification. Automated tests cover all pages, story opening, note retention, all-key fields, ordered fallback, encryption and games.

@@ -31,36 +31,44 @@ def configured_key(provider):
  except (FileNotFoundError,KeyError):secret=''
  return os.environ.get('KATHAVEDA_'+provider.upper()+'_API_KEY','') or secret or saved('provider:'+provider,{}).get('key','')
 def active_settings():
- provider=st.session_state.get('_primary',saved('primary','OpenRouter'))
- config=saved('provider:'+provider,{})
- key=st.session_state.get('_keys',{}).get(provider) or configured_key(provider)
- model=st.session_state.get('_models',{}).get(provider) or config.get('model') or CONFIG[provider][1]
- out=[(provider,key,model)]
- fallback=st.session_state.get('_fallback',saved('fallback','None'))
- if fallback in CONFIG and fallback!=provider:
-  conf=saved('provider:'+fallback,{})
-  key=st.session_state.get('_keys',{}).get(fallback) or configured_key(fallback)
-  if key:out.append((fallback,key,conf.get('model',CONFIG[fallback][1])))
- return out
+ primary=st.session_state.get('_primary',saved('primary','Gemini'))
+ order=[primary]+[p for p in CONFIG if p!=primary]
+ out=[]
+ for provider in order:
+  conf=saved('provider:'+provider,{})
+  key=st.session_state.get('_keys',{}).get(provider) or configured_key(provider)
+  model=st.session_state.get('_models',{}).get(provider) or conf.get('model') or CONFIG[provider][1]
+  if key:out.append((provider,key,model))
+ return out or [(primary,'',CONFIG[primary][1])]
 def settings_ui():
- st.header('Conversation & teaching settings')
- st.write('Set up one provider for questions and new chapter explanations. Saved readings are reused, so opening them again does not make another AI call.')
- provider=st.selectbox('Provider',list(CONFIG),key='settings_provider')
- configured=bool(configured_key(provider))
- if configured:st.success('A saved or hosting key is available for '+provider+'. The key is not displayed.')
- key=st.text_input('New API key',type='password',key='new_key_'+provider)
- model=st.text_input('Model',value=saved('provider:'+provider,{}).get('model',CONFIG[provider][1]),key='model_config_'+provider)
- fallback=st.selectbox('Fallback provider',['None']+[p for p in CONFIG if p!=provider])
- if st.button('Use these settings for this visit'):
-  st.session_state['_primary']=provider;st.session_state['_fallback']=fallback
-  st.session_state.setdefault('_keys',{})[provider]=key or configured_key(provider)
-  st.session_state.setdefault('_models',{})[provider]=model;st.success('Ready for this visit.')
- if st.button('Save settings securely',disabled=not st.session_state.get('_profile')):
-  effective=key or configured_key(provider)
-  if not effective:st.error('Enter a key before saving.')
-  else:
-   save('provider:'+provider,{'key':effective,'model':model});save('primary',provider);save('fallback',fallback)
-   st.session_state.update({'_primary':provider,'_fallback':fallback});st.session_state.setdefault('_keys',{})[provider]=effective;st.session_state.setdefault('_models',{})[provider]=model;st.success('Saved. Open the same profile on a later visit to use this key again.')
- if st.button('Forget saved '+provider+' key',disabled=not st.session_state.get('_profile')):
-  STORE.forget(st.session_state['_profile'],'provider:'+provider);st.session_state.get('_keys',{}).pop(provider,None);st.success('Saved key removed.')
- st.caption('Hosting keys stay private on the server. A profile passphrase is needed to unlock personal saved keys; forgetting the passphrase means the encrypted keys cannot be recovered.')
+ st.header('Connect your AI providers')
+ st.write('Enter all the keys you want to use. Your preferred provider answers first. If it fails, the others are tried one at a time. A successful answer stops further calls.')
+ if not st.session_state.get('_profile'):st.info('Open a study profile in the sidebar to save keys across visits. You can also use keys just for this visit.')
+ with st.form('all_provider_keys'):
+  current=st.session_state.get('_primary',saved('primary','Gemini'))
+  primary=st.selectbox('Preferred provider',list(CONFIG),index=list(CONFIG).index(current))
+  typed={};models={}
+  for provider in CONFIG:
+   st.subheader(provider)
+   if configured_key(provider):st.caption('A saved key is connected. Leave the field empty to keep it.')
+   typed[provider]=st.text_input(provider+' API key',type='password',key='new_key_'+provider)
+   models[provider]=st.text_input(provider+' model',value=saved('provider:'+provider,{}).get('model',CONFIG[provider][1]))
+  visit=st.form_submit_button('Use all keys for this visit')
+  persist=st.form_submit_button('Save all keys securely',disabled=not st.session_state.get('_profile'))
+ if visit or persist:
+  st.session_state['_primary']=primary
+  for provider in CONFIG:
+   key=typed[provider] or st.session_state.get('_keys',{}).get(provider) or configured_key(provider)
+   if key:
+    st.session_state.setdefault('_keys',{})[provider]=key
+    st.session_state.setdefault('_models',{})[provider]=models[provider]
+    if persist:save('provider:'+provider,{'key':key,'model':models[provider]})
+  if persist:save('primary',primary)
+  count=len([x for x in active_settings() if x[1]])
+  st.success(f'{count} providers connected. '+('All keys saved. Reopen this profile next time.' if persist else 'Ready for this visit.'))
+ st.caption('Fallback order: '+ ' → '.join(s[0] for s in active_settings() if s[1]))
+ with st.expander('Remove a saved provider key'):
+  provider=st.selectbox('Provider to disconnect',list(CONFIG))
+  if st.button('Remove this saved key',disabled=not st.session_state.get('_profile')):
+   STORE.forget(st.session_state['_profile'],'provider:'+provider);st.session_state.get('_keys',{}).pop(provider,None);st.success('Saved key removed.')
+ st.caption('Keys are encrypted using your profile passphrase. Hosting keys stay private on the server. Never put keys into a conversation message.')

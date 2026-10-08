@@ -48,7 +48,8 @@ class Tests(unittest.TestCase):
   self.assertFalse(app.exception);self.assertFalse(app.error);self.assertTrue(app.session_state['history'])
  def test_notes_survive_navigation(self):
   app=AppTest.from_file(str(Path(__file__).with_name('app.py'))).run();app.sidebar.radio[0].set_value('Situations').run()
-  area=next(t for t in app.text_area if t.key=='decisions_step0');area.set_value('Compare two realistic options').run()
+  next(b for b in app.button if b.key=='need_decisions').click().run()
+  area=next(t for t in app.text_input if t.key=='nextstep_decisions');area.set_value('Compare two realistic options').run()
   app.sidebar.radio[0].set_value('Reading room').run();app.sidebar.radio[0].set_value('Situations').run()
-  self.assertFalse(app.exception);self.assertEqual(next(t for t in app.text_area if t.key=='decisions_step0').value,'Compare two realistic options')
+  self.assertFalse(app.exception);self.assertEqual(next(t for t in app.text_input if t.key=='nextstep_decisions').value,'Compare two realistic options')
 if __name__=='__main__':unittest.main()

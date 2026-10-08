@@ -1,4 +1,4 @@
-"""One online call per question; optional single fallback. Keys are supplied by the encrypted profile settings layer."""
+"""One online call per question; ordered configured-provider fallback. Keys are supplied by the encrypted profile settings layer."""
 import json,urllib.request,urllib.error,urllib.parse
 CONFIG={
  'OpenRouter':('https://openrouter.ai/api/v1/chat/completions','openrouter/auto'),
@@ -33,7 +33,7 @@ def discuss(question,context,history,settings):
  system='You are a warm scripture study companion for Hindu families. Ask clarifying questions when useful. Distinguish source text, tradition-specific interpretation and modern practical advice. Do not invent quotations, verses, Sanskrit, references, or guarantees of divine rewards. If retrieved text does not support a claim, say so. Cite only supplied numbered sources. Be suitable for children when requested. Use short sentences and familiar words suitable for kids and elders. Explain Sanskrit terms when first used. For a life problem: briefly acknowledge the difficulty, explain one supported teaching, give three concrete steps the person can try today, and one everyday example. Avoid abstract philosophical speeches. Do not tell someone to accept abuse or replace professional help with chanting. For a story or verse, explain the events and meaning before any modern application.\nRetrieved original passages:\n'+sources
  messages=[{'role':'system','content':system}]+history[-8:]+[{'role':'user','content':question}]
  attempts=[]
- for provider,key,model in settings[:2]:
+ for provider,key,model in settings:
   try:return request(provider,key,model,messages),provider
   except ProviderError as e:attempts.append(provider+': '+str(e))
  raise ProviderError('\n'.join(attempts) or 'Configure an online provider first.')

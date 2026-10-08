@@ -3,25 +3,28 @@ from pathlib import Path
 import streamlit as st
 from knowledge import CONTENT,works,passages,search,audit
 from providers import CONFIG,discuss,ProviderError
-from reader_ui import reader_ui,prepare_explanation
+from reader_ui import prepare_explanation
+from friendly_ui import reading_room,situations_ui,STORIES
 from games_ui import games_ui
 from settings_ui import profile_ui,settings_ui,active_settings,saved,save
 from chapter_guides import GITA
 ROOT=Path(__file__).parent
 st.set_page_config(page_title='KathaVeda · Stories for life',page_icon='🪷',layout='wide')
-st.markdown('''<style>.stApp {background:linear-gradient(130deg,#fff9f0,#f1edff 65%,#eefbf6)} h1,h2,h3{color:#633e83} div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffb8;border-radius:18px} @media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} </style>''',unsafe_allow_html=True)
+st.markdown('''<style>.stApp {background:linear-gradient(130deg,#fff9f0,#f1edff 65%,#eefbf6)} h1,h2,h3{color:#633e83} div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffb8;border-radius:18px;border:1px solid #e5dbed;padding:4px} .block-container{max-width:1280px;padding-top:2rem} h3{font-size:1.2rem!important} button{border-radius:12px!important} div[data-testid="stSidebar"]{background:#f6f0fa} div[data-testid="stMetric"]{background:#fff8ed;padding:16px;border-radius:16px}  @media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}} </style>''',unsafe_allow_html=True)
 st.sidebar.image(str(ROOT/'assets/logo.svg'),width=120)
 st.title('🪷 KathaVeda')
-st.caption('Stories, study and thoughtful practice — together as a family')
+st.caption('Read a story. Learn a verse. Find a helpful next step.')
 page=st.sidebar.radio('Explore',['Reading room','Story garden','Learn & chant','Games','Converse','Situations','Settings','Coverage & sources'])
-profile_ui()
-family=st.sidebar.toggle('Younger reader explanations',value=False)
+# Profiles are optional; keep account setup out of the reading flow.
+if page=='Settings':profile_ui()
+elif st.session_state.get('_profile'):st.sidebar.caption('Study profile: '+st.session_state['_profile'])
+family=False
 st.sidebar.caption('Reading and prepared activities use the local database. Online conversation is optional.')
 W=works();titles={w['id']:w['title'] for w in W}
-G=CONTENT['guidance']['guidance'];S=CONTENT['scriptures']['stories']
+G=CONTENT['guidance']['guidance'];S=STORIES
 journal=st.session_state.setdefault('_journal',{})
 for k,v in list(st.session_state.items()):
- if k.startswith('reflection_') or any(k.startswith(g['id']+'_') for g in G):journal[k]=v
+ if k.startswith(('reflection_','nextstep_')) or any(k.startswith(g['id']+'_') for g in G):journal[k]=v
 for k,v in journal.items():
  if k not in st.session_state:st.session_state[k]=v
 def source(r):
@@ -48,7 +51,7 @@ if page=='Coverage & sources':
    st.link_button('Source edition',w['sourceUrl'])
 
 elif page=='Reading room':
- reader_ui()
+ reading_room()
 
 elif page=='Story garden':
  st.header('Take time with a story')
@@ -60,44 +63,7 @@ elif page=='Story garden':
  st.text_area('A family conversation or personal reflection',key='reflection_'+sid)
 
 elif page=='Situations':
- st.header('A situation you are facing')
- with st.expander('Find a teaching by Gita chapter'):
-  chapter=st.selectbox('Chapter teaching',range(1,19),format_func=lambda n:f'{n}. {GITA[n-1][0]} · {GITA[n-1][4]}')
-  guide=GITA[chapter-1];st.write(guide[1]);st.info('Try this: '+guide[2]);st.caption('Bhagavad Gita '+guide[3])
- for start in range(0,len(G),3):
-  for col,card in zip(st.columns(3),G[start:start+3]):
-   with col.container(border=True):
-    st.markdown('**'+card['title']+'**');st.caption(card['familyFeeling'] if family else card['feeling'])
-    st.button('Explore this situation',key='card_'+card['id'],on_click=lambda selected=card['id']:st.session_state.update({'selected_situation':selected}))
- gid=st.selectbox('Choose a situation',[g['id'] for g in G],format_func=lambda i:next(g['title'] for g in G if g['id']==i),key='selected_situation')
- g=next(g for g in G if g['id']==gid);st.subheader(g['title']);st.write(g['familyFeeling'] if family else g['feeling'])
- tabs=st.tabs(['Teaching & context','The full story','Apply it','A week of practice'])
- with tabs[0]:
-  st.info(g['familyPrinciple'] if family else g['principle']);st.write(g['teaching'])
-  for ref in g['gita']:
-   matches=[r for r in passages('gita') if r['reference']=='Bhagavad Gita '+ref]
-   for r in matches:render_passage(r)
-  st.caption('The guidance and worksheets are modern applications inspired by the sources; they are not literal scripture quotations.')
- with tabs[1]:
-  story=next((s for s in S if s['id']==g['storyId']),None)
-  if story:
-   st.subheader(story['title']);st.markdown(story['child'] if family else story['text']);st.link_button('Check the story source',story['url'])
- with tabs[2]:
-  st.write(g['example'])
-  for n,step in enumerate(g['familySteps'] if family else g['steps']):
-   with st.container(border=True):
-    st.markdown(f'**Step {n+1}**');st.write(step);st.text_area('Your response',key=f'{gid}_step{n}')
-  st.text_area(g['question'],key=gid+'_question')
-  st.text_input('One small action I can take today',key=gid+'_action')
-  st.text_input('Someone who can help me think this through',key=gid+'_help')
-  st.caption(g['caution'])
- with tabs[3]:
-  prompts=['Describe one real instance of the difficulty, without judging yourself.','Separate what happened from what you feared might happen.','Revisit the source passage and note a question about its context.','Try the small action you selected. Notice what changed.','Ask a trusted person for a different perspective.','Repeat what helped. Adjust what did not fit your circumstances.','Review your notes: what will you keep practising next week?']
-  for day,prompt in enumerate(prompts,1):
-   with st.expander(f'Day {day}: {prompt}'):
-    st.text_area('Notes',key=f'{gid}_day{day}');st.checkbox('Practised',key=f'{gid}_done{day}')
-  notes={k:v for k,v in st.session_state.items() if k.startswith(gid+'_')};st.download_button('Save my worksheet',json.dumps(notes,ensure_ascii=False,indent=2),gid+'-practice.json','application/json')
- st.button('Discuss this situation in Converse',on_click=lambda:st.session_state.update({'conversation_context':gid,'pending_question':g['question']}))
+ situations_ui()
 
 elif page=='Learn & chant':
  st.header('Learn a little, return often')
