@@ -38,4 +38,3 @@ python -m unittest test_app -q
 ```
 
 Tests inspect database integrity, readable content and catalogue links; open all seven app sections; advance learning; check and advance a quiz; preserve questions when keys are absent; and exercise readable and malformed provider responses for all four providers. Provider calls are mocked in tests, not evidence of successful live API access.
-

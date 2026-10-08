@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+.env
+.venv/
+data/scriptures.sqlite
+data/corpus.json.gz
+public/
+assets/logo.png

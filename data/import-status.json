@@ -1,0 +1,19 @@
+{
+  "revision": "2026-10-08-streamlit-v1",
+  "collections": 22,
+  "readingUnits": 4332,
+  "brahmavaivarta": {
+    "chapters": 275,
+    "missingByKhanda": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [
+        7
+      ]
+    },
+    "review": "Not independently collated"
+  },
+  "entirePuranaCorpusComplete": false,
+  "archiveSha256": "66d0a3e79f89981cdafba96a962fea7d1dc4fc5a9d41d2dc7edaa463e66e8fec"
+}
