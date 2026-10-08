@@ -22,9 +22,9 @@ class StudyTests(unittest.TestCase):
    for q in bank:self.assertTrue(q['reference']);self.assertTrue(q['why']);self.assertIn(q['answer'],range(len(q['choices'])))
   app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Games').click().run()
   self.assertEqual(len(next(s for s in app.selectbox if s.label=='Learning stage').options),25)
-  previous=app.session_state['_game']['items']
+  previous_ids={str(q) for q in app.session_state['_game']['items']}
   next(b for b in app.button if b.label=='Refresh · different challenges').click().run()
-  self.assertFalse(app.exception);self.assertTrue(all(q not in previous for q in app.session_state['_game']['items']))
+  self.assertFalse(app.exception);self.assertTrue(all(str(q) not in previous_ids for q in app.session_state['_game']['items']))
  def test_reading_shiva_explanation(self):
   app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Reading room').click().run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva').run()
   self.assertFalse(app.exception)
