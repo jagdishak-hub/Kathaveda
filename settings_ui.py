@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 from study_store import StudyStore
-from providers import CONFIG
+from providers import CONFIG,request,ProviderError
 STORE=StudyStore()
 def profile_ui():
  with st.sidebar.expander('My study profile',expanded=not bool(st.session_state.get('_profile'))):
@@ -67,6 +67,16 @@ def settings_ui():
   count=len([x for x in active_settings() if x[1]])
   st.success(f'{count} providers connected. '+('All keys saved. Reopen this profile next time.' if persist else 'Ready for this visit.'))
  st.caption('Fallback order: '+ ' → '.join(s[0] for s in active_settings() if s[1]))
+ connected=[s for s in active_settings() if s[1]]
+ if connected:
+  with st.expander('Check my connected providers'):
+   st.write('This sends one tiny test request to each connected provider. It may use a small amount of your provider quota.')
+   if st.button('Run connection check'):
+    for provider,key,model in connected:
+     try:
+      with st.spinner('Checking '+provider+'…'):request(provider,key,model,[{'role':'user','content':'Reply with exactly: READY'}])
+      st.success(provider+' · connected · '+model)
+     except ProviderError as e:st.error(provider+' · '+str(e))
  with st.expander('Remove a saved provider key'):
   provider=st.selectbox('Provider to disconnect',list(CONFIG))
   if st.button('Remove this saved key',disabled=not st.session_state.get('_profile')):
