@@ -1,9 +1,8 @@
 """Small, opt-in garden soundscape generated in the browser; no audio tracking or downloads."""
-import base64
-import streamlit as st
+import streamlit.components.v1 as components
 
 def ambience_ui():
- html='''
+ components.html('''
  <style>
  body{margin:0;font-family:system-ui;color:#31533c;background:transparent}
  .box{display:flex;align-items:center;gap:10px;padding:7px 9px;border:1px solid #b9d7bd;border-radius:14px;background:#f7fff4cc}
@@ -20,5 +19,4 @@ def ambience_ui():
  }
  function garden(){if(!on)return;const now=ctx.currentTime;[392,440,523,440].forEach((f,i)=>tone(f,now+i*1.15,.95,.025));tone(1250,now+.4,.18,.012,'sine');tone(1550,now+.58,.13,.01,'sine');tone(1180,now+3.0,.16,.009,'sine')}
  button.onclick=()=>{on=!on;if(on){ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();garden();timer=setInterval(garden,5200);button.textContent='Pause garden sounds'}else{clearInterval(timer);nodes.forEach(n=>{try{n.stop()}catch(e){}});nodes=[];button.textContent='Play garden sounds'}};
- </script>'''
- st.iframe('data:text/html;base64,'+base64.b64encode(html.encode()).decode(),height=68)
+ </script>''',height=68)
