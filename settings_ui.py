@@ -31,7 +31,7 @@ def configured_key(provider):
  except (FileNotFoundError,KeyError):secret=''
  return os.environ.get('KATHAVEDA_'+provider.upper()+'_API_KEY','') or secret or saved('provider:'+provider,{}).get('key','')
 def active_settings():
- primary=st.session_state.get('_primary',saved('primary','Gemini'))
+ primary=st.session_state.get('_primary',saved('primary','OpenRouter'))
  order=[primary]+[p for p in CONFIG if p!=primary]
  out=[]
  for provider in order:
@@ -45,7 +45,7 @@ def settings_ui():
  st.write('Enter all the keys you want to use. Your preferred provider answers first. If it fails, the others are tried one at a time. A successful answer stops further calls.')
  if not st.session_state.get('_profile'):st.info('Open a study profile in the sidebar to save keys across visits. You can also use keys just for this visit.')
  with st.form('all_provider_keys'):
-  current=st.session_state.get('_primary',saved('primary','Gemini'))
+  current=st.session_state.get('_primary',saved('primary','OpenRouter'))
   primary=st.selectbox('Preferred provider',list(CONFIG),index=list(CONFIG).index(current))
   typed={};models={}
   for provider in CONFIG:
@@ -72,11 +72,14 @@ def settings_ui():
   with st.expander('Check my connected providers'):
    st.write('This sends one tiny test request to each connected provider. It may use a small amount of your provider quota.')
    if st.button('Run connection check'):
+    st.session_state['_provider_checks']={}
     for provider,key,model in connected:
      try:
       with st.spinner('Checking '+provider+'…'):request(provider,key,model,[{'role':'user','content':'Reply with exactly: READY'}])
-      st.success(provider+' · connected · '+model)
-     except ProviderError as e:st.error(provider+' · '+str(e))
+      st.session_state['_provider_checks'][provider]='Connected · '+model
+     except ProviderError as e:st.session_state['_provider_checks'][provider]=str(e)
+  for provider,result in st.session_state.get('_provider_checks',{}).items():
+   (st.success if result.startswith('Connected') else st.error)(provider+' · '+result)
  with st.expander('Remove a saved provider key'):
   provider=st.selectbox('Provider to disconnect',list(CONFIG))
   if st.button('Remove this saved key',disabled=not st.session_state.get('_profile')):

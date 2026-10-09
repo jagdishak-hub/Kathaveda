@@ -2,9 +2,9 @@
 import json,urllib.request,urllib.error,urllib.parse
 CONFIG={
  'OpenRouter':('https://openrouter.ai/api/v1/chat/completions','openrouter/auto'),
- 'Gemini':('https://generativelanguage.googleapis.com/v1beta/models/','gemini-3.8-flash'),
- 'Groq':('https://api.groq.com/openai/v1/chat/completions','openai/gpt-oss-120b'),
- 'Grok':('https://api.x.ai/v1/chat/completions','grok-4.7')}
+ 'Gemini':('https://generativelanguage.googleapis.com/v1beta/models/','gemini-2.5-flash'),
+ 'Groq':('https://api.groq.com/openai/v1/chat/completions','llama-3.3-70b-versatile'),
+ 'Grok':('https://api.x.ai/v1/chat/completions','grok-3-mini')}
 class ProviderError(Exception):pass
 def request(provider,key,model,messages,opener=urllib.request.urlopen):
  if not key:raise ProviderError('Enter an API key in Settings to discuss further.')
@@ -18,8 +18,14 @@ def request(provider,key,model,messages,opener=urllib.request.urlopen):
  try:
   with opener(urllib.request.Request(url,data=json.dumps(body).encode(),headers=headers),timeout=40) as r:raw=r.read()
  except urllib.error.HTTPError as e:
+  try:
+   detail=json.loads(e.read().decode('utf-8','replace'))
+   detail=detail.get('error',{}).get('message') or detail.get('message') or ''
+  except Exception:detail=''
   explanations={401:'The API key was not accepted.',403:'This key or account cannot access this model.',404:'The selected model was not found.',429:'The provider has reached a rate or credit limit.'}
-  raise ProviderError(explanations.get(e.code,f'The provider returned HTTP {e.code}.')+' Try another connected provider or model.') from None
+  message=explanations.get(e.code,f'The provider returned HTTP {e.code}.')
+  if detail and len(detail)<240:message+=' '+detail
+  raise ProviderError(message+' Try another connected provider or model.') from None
  except (urllib.error.URLError,TimeoutError):raise ProviderError('The provider could not be reached. Your question is kept; you can retry.') from None
  try:
   data=json.loads(raw)

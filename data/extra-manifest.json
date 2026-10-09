@@ -22,5 +22,11 @@
     "folder": "extra-parts/folk-stories",
     "sha256": "983a71b7821b744a0e9d4229b71e1167e4fc462c4e5b108e9b1feb5320cbea36",
     "bytes": 247379
+  },
+  {
+    "file": "shiva-complete.json.gz",
+    "folder": "extra-parts/shiva-complete",
+    "sha256": "a8c0d245fa04c9c689e093d17febde8279fa105e15d4903a6fb56ffaf6169520",
+    "bytes": 1273134
   }
 ]

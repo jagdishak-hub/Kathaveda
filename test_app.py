@@ -14,7 +14,7 @@ class Tests(unittest.TestCase):
    self.assertEqual(c.execute('pragma integrity_check').fetchone()[0],'ok')
    self.assertEqual(c.execute('select count(*) from passages where length(original)=0 or length(source_url)=0').fetchone()[0],0)
    self.assertEqual(c.execute('select count(*) from passages where work_id not in(select id from works)').fetchone()[0],0)
-  self.assertEqual(len(works()),30)
+  self.assertEqual(len(works()),31)
   for w in works():self.assertTrue(passages(w['id']))
   self.assertTrue(any('not the complete' in r['Review'] for r in audit()))
  def test_providers(self):

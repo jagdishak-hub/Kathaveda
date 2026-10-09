@@ -16,7 +16,7 @@ if manifest.exists():
   target=ROOT/'data'/item['file']
   if not target.exists():target.write_bytes(b''.join(p.read_bytes() for p in sorted((ROOT/'data'/item['folder']).glob('part-*'))))
   assert hashlib.sha256(target.read_bytes()).hexdigest()==item['sha256'],'Additional archive failed integrity check'
-for extra in ['additional-sources.json.gz','gita-besant.json.gz','gutenberg-sources.json.gz','folk-stories.json.gz']:
+for extra in ['additional-sources.json.gz','gita-besant.json.gz','gutenberg-sources.json.gz','folk-stories.json.gz','shiva-complete.json.gz']:
  file=ROOT/'data'/extra
  if file.exists():
   if file.suffix=='.gz':

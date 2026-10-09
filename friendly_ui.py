@@ -75,14 +75,16 @@ def reading_room():
      if st.button('Read story →',key='read_'+story['id'],type='primary'):
       open_story(story)
  with books_tab:
-  for wid in ['gita','bhagavatam','narayaneeyam','shiva']:
+  available={w['id'] for w in works()}
+  for wid in ['gita','bhagavatam','narayaneeyam','shiva-complete' if 'shiva-complete' in available else 'shiva']:
    with st.container(border=True):
     title=next(w['title'] for w in works() if w['id']==wid);st.subheader(title);st.write(BOOK_INTROS[wid])
     if wid=='gita':
      chapter=st.selectbox('Choose a chapter to understand',range(1,19),format_func=lambda n:f'{n}. {GITA[n-1][0]}')
      guide=GITA[chapter-1];st.markdown(guide[1]);st.info('Try this: '+guide[2]);st.caption('Focus passage: Bhagavad Gita '+guide[3])
-    elif wid=='shiva':
-     chapter=st.selectbox('Prepared Shiva Purana readings',list(SHIVA_READINGS),format_func=lambda k:SHIVA_READINGS[k][0]);st.markdown(SHIVA_READINGS[chapter][1])
+    elif wid in ('shiva','shiva-complete'):
+     st.success('The complete seven-samhita Sanskrit edition is available in the Original scripture texts tab.' if wid=='shiva-complete' else 'This older source import is partial. See its coverage note.')
+     chapter=st.selectbox('Start with a prepared explanation',list(SHIVA_READINGS),format_func=lambda k:SHIVA_READINGS[k][0]);st.markdown(SHIVA_READINGS[chapter][1])
     else:
      choices=[s for s in STORIES if s['book']=='Bhagavatam'] if wid=='bhagavatam' else [s for s in STORIES if s['id'] in ('gajendra','narayaneeyam')]
      sid=st.selectbox('Choose a reading',[s['id'] for s in choices],format_func=lambda i,readings=choices:next(s['title'] for s in readings if s['id']==i),key='book_'+wid)

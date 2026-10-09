@@ -26,7 +26,7 @@ class StudyTests(unittest.TestCase):
   next(b for b in app.button if b.label=='Refresh · different challenges').click().run()
   self.assertFalse(app.exception);self.assertTrue(all(str(q) not in previous_ids for q in app.session_state['_game']['items']))
  def test_reading_shiva_explanation(self):
-  app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Reading room').click().run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva').run()
+  app=AppTest.from_file('app.py').run();next(b for b in app.sidebar.button if b.key=='nav_'+'Reading room').click().run();next(s for s in app.selectbox if s.label=='Choose a scripture').set_value('shiva-complete').run()
   self.assertFalse(app.exception)
   self.assertTrue(any('Prayaga' in m.value for m in app.markdown))
  def test_all_provider_fallbacks(self):

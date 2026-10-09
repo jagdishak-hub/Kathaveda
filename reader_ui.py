@@ -41,7 +41,11 @@ def reader_ui():
  work=lookup[wid];st.subheader(work['title']);st.write(BOOK_INTROS.get(wid,'Read this work a little at a time. Follow who is speaking, what happens and what the passage teaches.'))
  with st.expander('What is available in this edition?'):st.write(work['coverage']);st.write(work['note'])
  rows=passages(wid);sections=sorted({r['section'] for r in rows})
- section=st.selectbox('Canto / book / section',sections,format_func=lambda s:'Main text' if not s else str(s))
+ def section_label(s):
+  first=next(r for r in rows if r['section']==s)
+  title=json.loads(first['metadata']).get('readingTitle')
+  return title or ('Main text' if not s else str(s))
+ section=st.selectbox('Canto / book / section',sections,format_func=section_label)
  chapters=sorted({r['chapter'] for r in rows if r['section']==section})
  def label(ch):
   if wid in ('gita','gita-besant'):return f'{ch}. {GITA[ch-1][0]}'
@@ -58,8 +62,10 @@ def reader_ui():
  available=False
  if wid in ('gita','gita-besant'):
   title,body,action,ref,situation=GITA[chapter-1];st.markdown(body);st.info('Try this: '+action);st.caption('Plain-language chapter guide · focus passage: Bhagavad Gita '+ref);available=True
- elif wid=='shiva' and (section,chapter) in SHIVA_READINGS:
-  title,body=SHIVA_READINGS[section,chapter];st.markdown(body);st.caption('Original explanatory retelling based on Shiva Purana '+str(section)+'.'+str(chapter)+' · awaiting specialist review');available=True
+ elif wid in ('shiva','shiva-complete'):
+  legacy=(section,chapter) if wid=='shiva' else (1,chapter) if section==100 else None
+  if legacy in SHIVA_READINGS:
+   title,body=SHIVA_READINGS[legacy];st.markdown(body);st.caption('Prepared explanation based on the opening Shiva Purana chapter · awaiting specialist review');available=True
  stories=story_for(wid,section,chapter)
  for s in stories:
   st.markdown(s['text']);st.info('Think about this: '+s['reflection']);st.caption('Prepared retelling · '+s['book']+' '+s['ref']+' · awaiting specialist review');available=True
@@ -80,7 +86,7 @@ def reader_ui():
    with st.spinner('Preparing this chapter from its source text…'):prepare_explanation(cache_id,work['title']+' '+str(section)+'.'+str(chapter),original)
    st.rerun()
   except ProviderError as e:st.error(str(e))
- with st.expander('Original text and source details'):
+ with st.expander('Original text and source details',expanded=wid=='shiva-complete'):
   for r in selected:
    st.caption(r['reference']);st.text(r['original'])
   st.write('Source: '+work['sourceName']);st.write('Edition: '+work['edition']);st.code(selected[0]['source_url'],language=None)

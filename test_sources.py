@@ -13,6 +13,11 @@ class SourceTests(unittest.TestCase):
   self.assertEqual({r['section'] for r in passages('mahabharata-english')},set(range(1,19)))
   self.assertEqual(len(passages('vishnu-english')),126)
   self.assertEqual({r['section'] for r in passages('ramayana-english')},set(range(1,7)))
+ def test_complete_shiva_purana_structure(self):
+  rows=passages('shiva-complete')
+  self.assertEqual(len(rows),457)
+  self.assertEqual({s:len([r for r in rows if r['section']==s]) for s in sorted({r['section'] for r in rows})},{100:25,201:20,202:43,203:55,204:20,205:59,300:42,400:43,500:51,600:23,701:35,702:41})
+  self.assertTrue(all(len(r['original'])>80 for r in rows))
  def test_folklore_is_separate_and_substantial(self):
   tales=[s for s in STORIES if s.get('genre')=='Folklore']
   self.assertEqual(len(tales),29)
