@@ -2,6 +2,10 @@
 
 A family scripture-study companion for reading, learning, practical reflection and games. Built in Streamlit. Live: https://kathaveda-production.up.railway.app/
 
+The public experience is intentionally focused on five collections: Bhagavad Gita, Srimad Bhagavatam, Narayaneeyam, Shiva Purana and a separately attributed Saraswati Literature collection. Other imported editions remain visible only in Sources until their reading experience reaches the same standard. The top navigation replaces the older crowded sidebar.
+
+`My text` accepts session-private searchable TXT, PDF and DOCX uploads. It supports in-app reading, section search and provider-assisted simple explanations without adding an upload to the authenticated shared library. Image-only scans require OCR. Model explanations are labelled study aids and must not be treated as verified translations.
+
 ## Run
 
 Use Python 3.12. Run `python -m pip install -r requirements.txt`, then `python build_database.py` and `python -m streamlit run app.py`. The database is reconstructed from the included attributed source archives and integrity-checked parts. No AI call is needed to read stored texts.

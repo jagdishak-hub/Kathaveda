@@ -34,10 +34,11 @@ def story_for(wid,section,chapter):
    if first<=chapter<=last:out.append(s)
  return out
 
-def reader_ui():
+def reader_ui(default_id=None,allowed_ids=None):
  st.header('Reading room · understand a scripture')
- W=works();lookup={w['id']:w for w in W};ids=[w['id'] for w in W]
- wid=st.selectbox('Choose a scripture',ids,index=ids.index('bhagavatam'),format_func=lambda i:lookup[i]['title'])
+ W=works();lookup={w['id']:w for w in W};ids=[w['id'] for w in W if not allowed_ids or w['id'] in allowed_ids]
+ preferred=default_id if default_id in ids else 'bhagavatam' if 'bhagavatam' in ids else ids[0]
+ wid=st.selectbox('Choose a scripture',ids,index=ids.index(preferred),format_func=lambda i:lookup[i]['title'])
  work=lookup[wid];st.subheader(work['title']);st.write(BOOK_INTROS.get(wid,'Read this work a little at a time. Follow who is speaking, what happens and what the passage teaches.'))
  with st.expander('What is available in this edition?'):st.write(work['coverage']);st.write(work['note'])
  rows=passages(wid);sections=sorted({r['section'] for r in rows})

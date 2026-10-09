@@ -24,7 +24,7 @@ class SourceTests(unittest.TestCase):
   self.assertTrue(all(len(s['text'])>400 for s in tales))
  def test_home_opens_english_reader(self):
   app=AppTest.from_file('app.py').run()
-  self.assertTrue(any(h.value=='The Reading Room' for h in app.title))
+  self.assertTrue(any('The Reading Room' in m.value for m in app.markdown))
   next(b for b in app.button if b.key=='home_Reading room').click().run()
   self.assertFalse(app.exception)
   next(s for s in app.selectbox if s.label=='Choose an English book').set_value('vishnu-english').run()

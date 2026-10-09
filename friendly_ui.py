@@ -53,10 +53,10 @@ def open_story(story):
  story_view(story)
 
 def reading_room():
- st.header('Your reading room')
- st.write('Find a story, explore a book, or continue a chapter. Everything opens here.')
- a,b,c=st.columns(3);a.metric('Stories ready to read',len(STORIES));b.metric('Gita chapter guides',18);c.metric('Scripture collections',len(works()))
- stories_tab,books_tab,source_tab=st.tabs(['📖 Stories to read','📚 Explore books','🕉 Original scripture texts'])
+ st.header('Library')
+ st.write('Five carefully developed collections. Understand the work first, then enter its chapters, stories and learning paths.')
+ a,b,c=st.columns(3);a.metric('Focused collections',5);b.metric('Stories ready to read',len(STORIES));c.metric('Gita chapter guides',18)
+ books_tab,stories_tab,source_tab=st.tabs(['📚 The five collections','📖 Story shelf','🕉 Chapter reader'])
  with stories_tab:
   find_col,theme_col,shelf_col=st.columns([2,2,1])
   term=find_col.text_input('Find a story or character',placeholder='Try Krishna, Dhruva, kindness…')
@@ -76,9 +76,14 @@ def reading_room():
       open_story(story)
  with books_tab:
   available={w['id'] for w in works()}
-  for wid in ['gita','bhagavatam','narayaneeyam','shiva-complete' if 'shiva-complete' in available else 'shiva']:
+  for wid in ['gita','bhagavatam','narayaneeyam','shiva-complete' if 'shiva-complete' in available else 'shiva','saraswati-literature']:
    with st.container(border=True):
-    title=next(w['title'] for w in works() if w['id']==wid);st.subheader(title);st.write(BOOK_INTROS[wid])
+    if wid=='saraswati-literature':
+     st.markdown('<span class="rr-kicker">CURATED COLLECTION</span>',unsafe_allow_html=True);st.subheader('Saraswati Literature')
+     st.write('A focused collection for learning, speech, music and knowledge: Sarasvati Rahasya Upanishad, attributed hymns and stotras, and Saraswati narratives from established scriptures. Every component keeps its own source identity.')
+     st.info('The verified text inventory is being assembled. Only attributed components will enter the shared reader; use My text meanwhile for an edition you own.')
+     continue
+    title=next(w['title'] for w in works() if w['id']==wid);st.markdown('<span class="rr-kicker">FOUNDATIONAL COLLECTION</span>',unsafe_allow_html=True);st.subheader(title);st.write(BOOK_INTROS[wid])
     if wid=='gita':
      chapter=st.selectbox('Choose a chapter to understand',range(1,19),format_func=lambda n:f'{n}. {GITA[n-1][0]}')
      guide=GITA[chapter-1];st.markdown(guide[1]);st.info('Try this: '+guide[2]);st.caption('Focus passage: Bhagavad Gita '+guide[3])
@@ -89,11 +94,11 @@ def reading_room():
      choices=[s for s in STORIES if s['book']=='Bhagavatam'] if wid=='bhagavatam' else [s for s in STORIES if s['id'] in ('gajendra','narayaneeyam')]
      sid=st.selectbox('Choose a reading',[s['id'] for s in choices],format_func=lambda i,readings=choices:next(s['title'] for s in readings if s['id']==i),key='book_'+wid)
      s=next(s for s in choices if s['id']==sid);st.markdown(s['text']);st.caption(s['book']+' '+s['ref'])
-  st.caption('Other Purana source texts are available in Original scripture texts. Prepared English readings are still being expanded; collection coverage is listed with each edition.')
-  st.subheader('Full English editions')
-  english=[w for w in works() if w.get('language')=='English']
-  if english:
-   eid=st.selectbox('Choose an English book',[w['id'] for w in english],format_func=lambda i:next(w['title'] for w in english if w['id']==i))
+  st.caption('The main Library intentionally shows only the five focused collections. Other attributed imports remain documented under Sources.')
+  with st.expander('Historical English editions already stored'):
+   english=[w for w in works() if w.get('language')=='English']
+   if english:
+    eid=st.selectbox('Choose an English book',[w['id'] for w in english],format_func=lambda i:next(w['title'] for w in english if w['id']==i))
    readings=passages(eid);books=sorted({r['section'] for r in readings});book=st.selectbox('Book / part',books)
    readings=[r for r in readings if r['section']==book]
    rids=[r['id'] for r in readings];reader_key='full_reading_'+eid+'_'+str(book)
@@ -110,7 +115,7 @@ def reading_room():
    paragraphs=''.join('<p>'+html.escape(p).replace('\n','<br>')+'</p>' for p in reading['original'].split('\n\n') if p.strip())
    st.markdown(f'<div class="rr-long-reader" style="font-size:{size_px}">{paragraphs}</div>',unsafe_allow_html=True)
    st.caption('Historical English edition; older vocabulary. Source: '+reading['source_url'])
- with source_tab:source_reader()
+ with source_tab:source_reader(allowed_ids=['gita','gita-besant','bhagavatam','narayaneeyam','shiva-complete'])
 
 def situations_ui():
  st.header('What would help you today?')

@@ -3,8 +3,9 @@ import streamlit as st
 from study_store import StudyStore
 from providers import CONFIG,request,ProviderError
 STORE=StudyStore()
-def profile_ui():
- with st.sidebar.expander('My study profile',expanded=not bool(st.session_state.get('_profile'))):
+def profile_ui(location=None):
+ location=location or st.sidebar
+ with location.expander('My study profile',expanded=not bool(st.session_state.get('_profile'))):
   if st.session_state.get('_profile'):
    st.success('Profile open: '+st.session_state['_profile'])
    if st.button('Lock my profile'):

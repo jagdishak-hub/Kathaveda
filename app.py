@@ -9,20 +9,20 @@ from games_ui import games_ui
 from settings_ui import profile_ui,settings_ui,active_settings,saved,save
 from chapter_guides import GITA
 ROOT=Path(__file__).parent
-st.set_page_config(page_title='The Reading Room · Learn and live',page_icon='🪷',layout='wide')
+st.set_page_config(page_title='The Reading Room · Learn and live',page_icon='🪷',layout='wide',initial_sidebar_state='collapsed')
 st.markdown('''<style>
-.stApp{background:radial-gradient(circle at 85% 6%,#fff9c9 0 3%,transparent 3.2%),linear-gradient(145deg,#f8fff1 0%,#eaf7e7 52%,#f7f1df 100%);background-attachment:fixed}h1,h2,h3{color:#285c3a;font-family:Georgia,serif}p{line-height:1.65}div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffe8;border-radius:20px;border:1px solid #c9dfc5;padding:5px;box-shadow:0 8px 26px #285c3a0d}.block-container{max-width:1280px;padding-top:2rem}h3{font-size:1.2rem!important}button{border-radius:999px!important}section[data-testid="stSidebar"],div[data-testid="stSidebar"]{background:linear-gradient(180deg,#eaf6e4 0%,#dcefdc 58%,#f5edda 100%)!important;border-right:1px solid #b7d0ae}div[data-testid="stSidebar"] img{display:block;margin:4px auto 0;filter:drop-shadow(0 7px 12px #294a2a25)}div[data-testid="stSidebar"] button{border:1px solid #bad1b4!important;text-align:left!important;justify-content:flex-start!important;padding:.55rem .75rem!important;min-height:2.55rem;background:#ffffffd9!important;color:#294b35!important;box-shadow:0 2px 7px #274d310d}div[data-testid="stSidebar"] button p{color:inherit!important}div[data-testid="stSidebar"] button:hover{background:#f7fff3!important;border-color:#6fa477!important;transform:translateX(2px)}div[data-testid="stSidebar"] button[kind="primary"]{background:linear-gradient(90deg,#34764b,#5c934f)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 5px 14px #274b303d;font-weight:700}.rr-side-name{text-align:center;color:#264c32!important;font-family:Georgia,serif;font-weight:800;letter-spacing:.08em;font-size:1.05rem;margin-top:4px}.rr-side-line{text-align:center;color:#57745d!important;font-size:.78rem;margin:2px 0 12px}.rr-side-group{font-size:.67rem;letter-spacing:.16em;color:#3e6c48!important;margin:18px 4px 6px;font-weight:800}.rr-study-card{background:#f9fff5cc;border:1px solid #bdd4b7;color:#294b35!important;padding:12px;border-radius:14px;font-size:.82rem;line-height:1.45}.rr-study-card b{color:#274f34!important}.rr-study-card span{color:#57705d!important}.rr-study-card hr{border:0;border-top:1px solid #c7d9c2;margin:9px 0}.rr-long-reader{max-width:820px;margin:18px auto;padding:28px 34px;background:#fffef8;border:1px solid #d9ddc6;border-radius:18px;box-shadow:0 10px 30px #31573510;color:#2d332c;line-height:1.8;font-family:Georgia,serif}.rr-long-reader p{margin:0 0 1.15em}div[data-testid="stMetric"]{background:#fffceb;padding:16px;border-radius:16px}.rr-garden{padding:12px 18px;border-radius:18px;background:linear-gradient(90deg,#dff1d7,#fff6cd);border:1px solid #b9d0a9;color:#31543a;margin:8px 0 18px}.rr-game-map{padding:12px;border-radius:16px;background:#f4fae9;border:1px dashed #7ea36f;letter-spacing:.12em;text-align:center}.stProgress>div>div{background:linear-gradient(90deg,#4e8c55,#d3a741)!important}@media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}.rr-garden{animation:breathe 4s ease-in-out infinite alternate}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes breathe{to{box-shadow:0 7px 28px #6b9a6030}}}</style>''',unsafe_allow_html=True)
+.stApp{background:radial-gradient(circle at 85% 6%,#fff9c9 0 3%,transparent 3.2%),linear-gradient(145deg,#f8fff1 0%,#eaf7e7 52%,#f7f1df 100%);background-attachment:fixed}h1,h2,h3{color:#285c3a;font-family:Georgia,serif}p{line-height:1.65}div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffe8;border-radius:20px;border:1px solid #c9dfc5;padding:5px;box-shadow:0 8px 26px #285c3a0d}.block-container{max-width:1280px;padding-top:1.1rem}h3{font-size:1.2rem!important}button{border-radius:999px!important}.rr-brand{display:flex;align-items:center;gap:16px;min-height:82px}.rr-brand img{width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 5px 10px #294a2a20)}.rr-brand h1{font-size:2rem!important;margin:0!important;line-height:1}.rr-brand p{margin:7px 0 0;color:#607663;letter-spacing:.08em;font-size:.84rem;text-transform:uppercase}.rr-nav-rule{height:1px;background:linear-gradient(90deg,transparent,#9ebd91,transparent);margin:8px 0 24px}.rr-long-reader{max-width:850px;margin:18px auto;padding:34px 40px;background:#fffef8;border:1px solid #d9ddc6;border-radius:18px;box-shadow:0 10px 30px #31573510;color:#2d332c;line-height:1.85;font-family:Georgia,serif}.rr-long-reader p{margin:0 0 1.15em}div[data-testid="stMetric"]{background:#fffceb;padding:16px;border-radius:16px}.rr-garden{padding:12px 18px;border-radius:18px;background:linear-gradient(90deg,#dff1d7,#fff6cd);border:1px solid #b9d0a9;color:#31543a;margin:8px 0 18px}.rr-game-map{padding:12px;border-radius:16px;background:#f4fae9;border:1px dashed #7ea36f;letter-spacing:.12em;text-align:center}.rr-book{min-height:250px;padding:22px;border-radius:22px;background:linear-gradient(145deg,#fffdf5,#edf7e8);border:1px solid #c7dbc0}.rr-kicker{letter-spacing:.14em;text-transform:uppercase;color:#6f806c;font-size:.72rem;font-weight:800}.stProgress>div>div{background:linear-gradient(90deg,#4e8c55,#d3a741)!important}@media(max-width:800px){.rr-brand img{width:58px;height:58px}.rr-brand h1{font-size:1.55rem!important}.rr-brand p{font-size:.68rem}.rr-long-reader{padding:22px}}@media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}.rr-garden{animation:breathe 4s ease-in-out infinite alternate}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes breathe{to{box-shadow:0 7px 28px #6b9a6030}}}</style>''',unsafe_allow_html=True)
 logo_data=base64.b64encode((ROOT/'assets/logo.svg').read_bytes()).decode()
-st.sidebar.markdown(f'<div style="display:flex;justify-content:center;align-items:center;width:100%;padding:2px 0 0"><img alt="The Reading Room logo" src="data:image/svg+xml;base64,{logo_data}" style="display:block;width:112px;height:auto;margin:0 auto"></div>',unsafe_allow_html=True)
 from ambience import ambience_ui
-with st.sidebar:ambience_ui()
-st.title('The Reading Room')
-st.caption('Read a story. Learn a verse. Find a helpful next step.')
-from navigation import sidebar_navigation
-page=sidebar_navigation()
+brand,sound=st.columns([5,2])
+with brand:
+ st.markdown(f'<div class="rr-brand"><img alt="The Reading Room logo" src="data:image/svg+xml;base64,{logo_data}"><div><h1>The Reading Room</h1><p>Scripture · stories · practice · guidance</p></div></div>',unsafe_allow_html=True)
+with sound:ambience_ui()
+from navigation import top_navigation
+page=top_navigation()
+st.markdown('<div class="rr-nav-rule"></div>',unsafe_allow_html=True)
 # Profiles are optional; keep account setup out of the reading flow.
-if page=='Settings':profile_ui()
-elif st.session_state.get('_profile'):st.sidebar.caption('Study profile: '+st.session_state['_profile'])
+if page=='Settings':profile_ui(location=st)
 family=False
 W=works();titles={w['id']:w['title'] for w in W}
 G=CONTENT['guidance']['guidance'];S=STORIES
@@ -123,6 +123,10 @@ elif page=='Learn & chant':
 
 elif page=='Games':
  games_ui()
+
+elif page=='Study my text':
+ from upload_ui import upload_ui
+ upload_ui()
 
 elif page=='Settings':
  settings_ui()
