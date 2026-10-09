@@ -34,11 +34,14 @@ def story_for(wid,section,chapter):
    if first<=chapter<=last:out.append(s)
  return out
 
-def reader_ui(default_id=None,allowed_ids=None):
+def reader_ui(default_id=None,allowed_ids=None,locked_id=None):
  st.header('Reading room · understand a scripture')
  W=works();lookup={w['id']:w for w in W};ids=[w['id'] for w in W if not allowed_ids or w['id'] in allowed_ids]
- preferred=default_id if default_id in ids else 'bhagavatam' if 'bhagavatam' in ids else ids[0]
- wid=st.selectbox('Choose a scripture',ids,index=ids.index(preferred),format_func=lambda i:lookup[i]['title'])
+ preferred=locked_id if locked_id in ids else default_id if default_id in ids else 'bhagavatam' if 'bhagavatam' in ids else ids[0]
+ if locked_id in ids:
+  wid=locked_id
+ else:
+  wid=st.selectbox('Choose a scripture',ids,index=ids.index(preferred),format_func=lambda i:lookup[i]['title'])
  work=lookup[wid];st.subheader(work['title']);st.write(BOOK_INTROS.get(wid,'Read this work a little at a time. Follow who is speaking, what happens and what the passage teaches.'))
  with st.expander('What is available in this edition?'):st.write(work['coverage']);st.write(work['note'])
  rows=passages(wid);sections=sorted({r['section'] for r in rows})
@@ -87,9 +90,12 @@ def reader_ui(default_id=None,allowed_ids=None):
    with st.spinner('Preparing this chapter from its source text…'):prepare_explanation(cache_id,work['title']+' '+str(section)+'.'+str(chapter),original)
    st.rerun()
   except ProviderError as e:st.error(str(e))
- with st.expander('Original text and source details',expanded=wid=='shiva-complete'):
+ with st.expander('Read the original scripture text',expanded=True):
   for r in selected:
-   st.caption(r['reference']);st.text(r['original'])
+   st.markdown('**'+r['reference']+'**');st.text(r['original'])
+   meta=json.loads(r['metadata']);meaning=meta.get('meaning')
+   if meaning and not meaning.startswith('An editorially reviewed'):
+    st.info(meaning)
   st.write('Source: '+work['sourceName']);st.write('Edition: '+work['edition']);st.code(selected[0]['source_url'],language=None)
  if st.button('Discuss this chapter'):
   st.session_state['_reading_context']=selected;st.session_state['_conversation_question']='Help me apply the teaching in '+selected[0]['reference']+' to a situation I am facing.';st.success('Chapter selected. Open Converse to describe your situation.')
