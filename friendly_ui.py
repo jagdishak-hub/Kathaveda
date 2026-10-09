@@ -54,9 +54,18 @@ def open_story(story):
 
 def reading_room():
  st.header('Library')
- st.write('Five carefully developed collections. Understand the work first, then enter its chapters, stories and learning paths.')
- a,b,c=st.columns(3);a.metric('Focused collections',5);b.metric('Stories ready to read',len(STORIES));c.metric('Gita chapter guides',18)
- books_tab,stories_tab,source_tab=st.tabs(['📚 The five collections','📖 Story shelf','🕉 Chapter reader'])
+ st.write('Open the stored scripture here. Source text, translation and explanation are separate so you can see exactly what is—and is not—available.')
+ st.warning('This is not yet five complete reader-ready scriptures. Four Sanskrit source collections are stored; translations and reviewed explanations are incomplete. The Saraswati collection is not loaded yet.')
+ coverage=[
+  {'Collection':'Bhagavad Gita','Original text':'700 Sanskrit verses · 18 chapters','Translation':'Historical English edition stored separately','Simple explanations':'18 chapter guides; verse meanings incomplete','Learning':'Verse-by-verse; recorded pronunciation incomplete'},
+  {'Collection':'Srimad Bhagavatam','Original text':'335 Sanskrit chapters · 12 cantos','Translation':'Not complete','Simple explanations':'Selected story guides only','Learning':'Not yet verse-by-verse'},
+  {'Collection':'Narayaneeyam','Original text':'100 Sanskrit dasakams','Translation':'Not complete','Simple explanations':'Selected readings only','Learning':'Dasakam-level; verse splitting pending'},
+  {'Collection':'Shiva Purana','Original text':'457 Sanskrit chapters · 7 samhitas','Translation':'Not complete','Simple explanations':'Only selected chapters','Learning':'Not yet available'},
+  {'Collection':'Saraswati literature','Original text':'Not loaded','Translation':'Not loaded','Simple explanations':'Not loaded','Learning':'Not loaded'},
+ ]
+ with st.expander('Coverage of the five focused collections',expanded=True):st.dataframe(coverage,hide_index=True,width='stretch')
+ a,b,c=st.columns(3);a.metric('Stored source collections',4);b.metric('Stories ready to read',len(STORIES));c.metric('Gita chapter guides',18)
+ source_tab,books_tab,stories_tab=st.tabs(['🕉 Read the text','📚 About the collections','📖 Story shelf'])
  with stories_tab:
   find_col,theme_col,shelf_col=st.columns([2,2,1])
   term=find_col.text_input('Find a story or character',placeholder='Try Krishna, Dhruva, kindness…')
@@ -99,23 +108,25 @@ def reading_room():
    english=[w for w in works() if w.get('language')=='English']
    if english:
     eid=st.selectbox('Choose an English book',[w['id'] for w in english],format_func=lambda i:next(w['title'] for w in english if w['id']==i))
-   readings=passages(eid);books=sorted({r['section'] for r in readings});book=st.selectbox('Book / part',books)
-   readings=[r for r in readings if r['section']==book]
-   rids=[r['id'] for r in readings];reader_key='full_reading_'+eid+'_'+str(book)
-   rid=st.selectbox('Choose a chapter or tale',rids,format_func=lambda i:next(r['reference'] for r in readings if r['id']==i),key=reader_key)
-   current=rids.index(rid)
-   def move_reading(delta):st.session_state[reader_key]=rids[max(0,min(len(rids)-1,current+delta))]
-   prev_col,count_col,next_col=st.columns([1,2,1])
-   prev_col.button('← Previous',disabled=current==0,key='prev_'+reader_key,on_click=move_reading,args=(-1,),use_container_width=True)
-   count_col.caption(f'Reading {current+1} of {len(rids)} in book / part {book}')
-   next_col.button('Next →',disabled=current==len(rids)-1,key='next_'+reader_key,on_click=move_reading,args=(1,),use_container_width=True)
-   size=st.radio('Reading size',['Comfortable','Large','Extra large'],horizontal=True,key='size_'+eid)
-   reading=next(r for r in readings if r['id']==rid)
-   size_px={'Comfortable':'18px','Large':'21px','Extra large':'24px'}[size]
-   paragraphs=''.join('<p>'+html.escape(p).replace('\n','<br>')+'</p>' for p in reading['original'].split('\n\n') if p.strip())
-   st.markdown(f'<div class="rr-long-reader" style="font-size:{size_px}">{paragraphs}</div>',unsafe_allow_html=True)
-   st.caption('Historical English edition; older vocabulary. Source: '+reading['source_url'])
- with source_tab:source_reader(allowed_ids=['gita','gita-besant','bhagavatam','narayaneeyam','shiva-complete'])
+    readings=passages(eid);books=sorted({r['section'] for r in readings});book=st.selectbox('Book / part',books)
+    readings=[r for r in readings if r['section']==book]
+    rids=[r['id'] for r in readings];reader_key='full_reading_'+eid+'_'+str(book)
+    rid=st.selectbox('Choose a chapter or tale',rids,format_func=lambda i:next(r['reference'] for r in readings if r['id']==i),key=reader_key)
+    current=rids.index(rid)
+    def move_reading(delta):st.session_state[reader_key]=rids[max(0,min(len(rids)-1,current+delta))]
+    prev_col,count_col,next_col=st.columns([1,2,1])
+    prev_col.button('← Previous',disabled=current==0,key='prev_'+reader_key,on_click=move_reading,args=(-1,),use_container_width=True)
+    count_col.caption(f'Reading {current+1} of {len(rids)} in book / part {book}')
+    next_col.button('Next →',disabled=current==len(rids)-1,key='next_'+reader_key,on_click=move_reading,args=(1,),use_container_width=True)
+    size=st.radio('Reading size',['Comfortable','Large','Extra large'],horizontal=True,key='size_'+eid)
+    reading=next(r for r in readings if r['id']==rid)
+    size_px={'Comfortable':'18px','Large':'21px','Extra large':'24px'}[size]
+    paragraphs=''.join('<p>'+html.escape(p).replace('\n','<br>')+'</p>' for p in reading['original'].split('\n\n') if p.strip())
+    st.markdown(f'<div class="rr-long-reader" style="font-size:{size_px}">{paragraphs}</div>',unsafe_allow_html=True)
+    st.caption('Historical English edition; older vocabulary. Source: '+reading['source_url'])
+ with source_tab:
+  focus=st.session_state.pop('_library_work',None)
+  source_reader(default_id=focus,allowed_ids=['gita','gita-besant','bhagavatam','narayaneeyam','shiva-complete'])
 
 def situations_ui():
  st.header('What would help you today?')
