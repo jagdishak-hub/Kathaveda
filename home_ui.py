@@ -16,12 +16,13 @@ def home_ui():
    if st.button('Continue my verse practice',type='primary'):
     item=sorted(due,key=lambda x:x['due'])[0];st.session_state.page='Learn & chant';st.session_state.learning_course=item['work'];st.rerun()
  st.markdown('## Begin with a collection')
- books=[('🕉','Bhagavad Gita','18 chapters · verse learning and practical guidance','Complete structured text'),('🪷','Srimad Bhagavatam','12 cantos · stories, characters and devotion','Source text with growing story guides'),('🎶','Narayaneeyam','100 dasakams · Bhagavatam retold through devotion','Complete verse sequence'),('🔱','Shiva Purana','7 samhitas · 457 Sanskrit chapters','Complete named Sanskrit edition'),('📜','Saraswati Literature','Upanishad, hymns, stotras and attributed narratives','Verified collection in development')]
+ books=[('🕉','Bhagavad Gita','18 chapters · verse learning and practical guidance','Sanskrit source stored','gita'),('🪷','Srimad Bhagavatam','12 cantos · stories, characters and devotion','Sanskrit source stored','bhagavatam'),('🎶','Narayaneeyam','100 dasakams · Bhagavatam retold through devotion','Sanskrit source stored','narayaneeyam'),('🔱','Shiva Purana','7 samhitas · 457 Sanskrit chapters','Sanskrit source stored','shiva-complete'),('📜','Saraswati Literature','Upanishad, hymns, stotras and attributed narratives','Not loaded yet',None)]
  for start in range(0,len(books),3):
-  for col,(icon,title,body,status) in zip(st.columns(3),books[start:start+3]):
+  for col,(icon,title,body,status,wid) in zip(st.columns(3),books[start:start+3]):
    with col.container(border=True):
     st.markdown('<span class="rr-kicker">'+status+'</span>',unsafe_allow_html=True);st.subheader(icon+' '+title);st.write(body)
-    st.button('Open collection',key='home_book_'+title,on_click=lambda:st.session_state.update({'page':'Reading room'}),use_container_width=True)
+    if wid:st.button('Read stored text',key='home_book_'+title,on_click=lambda w=wid:st.session_state.update({'page':'Reading room','_library_work':w}),use_container_width=True)
+    else:st.button('Not available',key='home_book_'+title,disabled=True,use_container_width=True)
  st.markdown('## What would you like to do?')
  journeys=[('Read a chapter','Reading room'),('Learn a verse','Learn & chant'),('Find guidance','Situations'),('Play a challenge','Games'),('Ask the mentor','Converse'),('Study my own text','Study my text')]
  for col,(label,page) in zip(st.columns(6),journeys):col.button(label,key='home_'+page,on_click=lambda p=page:st.session_state.update({'page':p}),use_container_width=True)
