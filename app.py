@@ -22,7 +22,6 @@ with sound:ambience_ui()
 from navigation import top_navigation
 page=top_navigation()
 st.markdown('<div class="rr-nav-rule"></div>',unsafe_allow_html=True)
-# Profiles are optional; keep account setup out of the reading flow.
 if page=='Settings':profile_ui(location=st)
 family=False
 W=works();titles={w['id']:w['title'] for w in W}
@@ -33,7 +32,10 @@ for k,v in list(st.session_state.items()):
 for k,v in journal.items():
  if k not in st.session_state:st.session_state[k]=v
 def source(r):
- st.caption(r['reference']);st.link_button('Read source',r.get('source_url',r.get('sourceUrl','https://sa.wikisource.org')))
+ st.caption(r['reference'])
+ with st.expander('Source details'):
+  st.write('Source provenance is available here without leaving Tattvika. Full source links are collected separately on the Sources page.')
+  st.code(r.get('source_url',r.get('sourceUrl','Source URL not recorded')),language=None)
 def render_passage(r):
  st.markdown('### '+r['reference']);st.text(r['original'])
  if r.get('transliteration') and r['transliteration']!=r['original']:
@@ -46,7 +48,6 @@ def render_passage(r):
 if page=='Home':
  from home_ui import home_ui
  home_ui()
-
 elif page=='Coverage & sources':
  st.header('What is actually available?')
  st.warning('The full set of Puranas is not complete. These are attributed electronic transcriptions, not independently verified critical editions. A title in the catalogue does not mean every part is present.')
@@ -58,10 +59,8 @@ elif page=='Coverage & sources':
   with st.expander(w['title']+' · edition and rights'):
    for label,key in [('Edition','edition'),('Coverage','coverage'),('Source','sourceName'),('Rights','rights'),('Review','note')]:st.write('**'+label+'**: '+w.get(key,'Not recorded'))
    st.link_button('Source edition',w['sourceUrl'])
-
 elif page=='Reading room':
  reading_room()
-
 elif page=='Story garden':
  st.header('Take time with a story')
  themes=sorted({t for s in S for t in s['themes']});theme=st.selectbox('Theme',['All']+themes)
@@ -70,10 +69,8 @@ elif page=='Story garden':
  s=next(s for s in S if s['id']==sid);st.subheader(s['title']);st.caption(s['book']+' '+s['ref']+' · prepared retelling, awaiting scholarly review')
  st.markdown(s['child'] if family else s['text']);st.info(s['reflection']);st.link_button('Compare with source chapters',s['url'])
  st.text_area('A family conversation or personal reflection',key='reflection_'+sid)
-
 elif page=='Situations':
  situations_ui()
-
 elif page=='Learn & chant':
  st.header('Learn, understand and chant')
  st.caption('Do not memorise sound alone. Tattvika keeps the text, transliteration, meaning and study explanation together while keeping their provenance separate.')
@@ -117,17 +114,13 @@ elif page=='Learn & chant':
   except (ValueError,AttributeError):st.session_state['restore_error']='This progress file could not be read.'
  if uploaded:st.button('Restore',on_click=restore)
  if st.session_state.get('restore_error'):st.error(st.session_state['restore_error'])
-
 elif page=='Games':
  games_ui()
-
 elif page=='Study my text':
  from upload_ui import upload_ui
  upload_ui()
-
 elif page=='Settings':
  settings_ui()
-
 elif page=='Converse':
  st.header('Converse with Tattvika')
  st.caption('Ask about a story, verse, name, teaching or difficulty. Answers use stored scripture passages and your configured provider fallback.')
@@ -153,8 +146,7 @@ elif page=='Converse':
   prepared=next((a for a in CONTENT['corpus']['corpusAnswers'] if a['question']==question.lower().strip().rstrip('?!.') and not a['id'].startswith('guidance-')),None)
   context=search(question)
   gid=st.session_state.get('conversation_context');g=next((g for g in G if g['id']==gid),None)
-  if g:
-   context=[r for r in passages('gita') if r['reference'].removeprefix('Bhagavad Gita ') in g['gita']]+context
+  if g:context=[r for r in passages('gita') if r['reference'].removeprefix('Bhagavad Gita ') in g['gita']]+context
   if st.session_state.get('_reading_context'):context=st.session_state['_reading_context']+context
   try:
    if prepared:answer,used=prepared['answer'],'prepared local answer (no AI call)'
@@ -163,7 +155,7 @@ elif page=='Converse':
    st.session_state['history'] += [{'role':'user','content':question},{'role':'assistant','content':answer}]
    with st.chat_message('assistant'):st.markdown(answer)
    st.caption('Answered by '+used+('' if prepared else ' · model interpretation, not an independently reviewed commentary'))
-   for i,r in enumerate(context,1):st.markdown(f'[{i}] [{r["reference"]}]({r["source_url"]})')
+   for i,r in enumerate(context,1):st.markdown(f'[{i}] {r["reference"]}')
   except ProviderError as e:st.error(str(e))
  if st.button('Clear conversation'):
   for k in list(st.session_state):
