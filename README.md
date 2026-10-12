@@ -1,35 +1,96 @@
-# The Reading Room
+# Tattvika
 
-A family scripture-study companion for reading, learning, practical reflection and games. Built in Streamlit. Live: https://kathaveda-production.up.railway.app/
+**Read · Understand · Explore · Reflect**
 
-The public experience is intentionally focused on five collections: Bhagavad Gita, Srimad Bhagavatam, Narayaneeyam, Shiva Purana and a separately attributed Saraswati Literature collection. Other imported editions remain visible only in Sources until their reading experience reaches the same standard. The top navigation replaces the older crowded sidebar.
+Tattvika is a source-first Hindu literature, learning, reflection, stories and games companion built in Streamlit.
 
-`My text` accepts session-private searchable TXT, PDF and DOCX uploads. It supports in-app reading, section search and provider-assisted simple explanations without adding an upload to the authenticated shared library. Image-only scans require OCR. Model explanations are labelled study aids and must not be treated as verified translations.
+Live app: https://kathaveda-production.up.railway.app/
 
-## Run
+> Repository continuity note: the GitHub repository and Railway service retain the historical `Kathaveda` name so existing deployments, storage and URLs are not broken. The product name going forward is **Tattvika**.
 
-Use Python 3.12. Run `python -m pip install -r requirements.txt`, then `python build_database.py` and `python -m streamlit run app.py`. The database is reconstructed from the included attributed source archives and integrity-checked parts. No AI call is needed to read stored texts.
+## Current library
 
-## Current reading library
+The shipped literature database currently contains **31 attributed source collections and 9,942 nonempty reading units**. Units may be verses, hymns, chapters or sections; they are not story counts. The database also contains prepared retellings and a separate historical folktale collection.
 
-31 attributed source collections and 9,942 nonempty reading units. Units can be verses, hymns, chapters or sections; this is not a story count. There are 26 prepared retellings and 29 historical collected folktales, kept distinct from scripture.
+The reading library includes, among other collections:
 
-New editions include Annie Besant’s 1922 Sanskrit/English Gita (701 readings; chapter 13 includes an opening Arjuna question), GRETIL Ramayana, Rigveda and Narasimha Purana; historical English translations of Ramayana (Griffith, books 1–6), Vishnu Purana (Dutt/Wilson, six parts) and Mahabharata (Ganguli, all 18 books). Mahabharata source section numbers have internal gaps; scope is the electronic edition, not an independently collated complete critical text. Original numbering is retained.
+- Bhagavad Gita, including Annie Besant's 1922 Sanskrit/English edition
+- Srimad Bhagavatam
+- Narayaneeyam
+- Valmiki Ramayana sources, including GRETIL and Griffith material
+- Mahabharata — Ganguli, across all 18 books of the electronic edition
+- complete named Sanskrit Shiva Purana edition — 457 chapters across seven samhitas
+- Vishnu Purana historical translations
+- Rigveda source material
+- Narasimha Purana
+- Upanishadic, hymn, stotra and Saraswati literature collections
+- additional Puranic material with explicit coverage status
 
-The library now includes a complete 457-chapter Sanskrit Shiva Purana across all seven samhitas, complete against the named Sanskrit Wikisource edition structure. Its simple English explanations are not complete; generated study aids remain separately labelled. **The full set of every Purana in every edition is still incomplete.** Skanda is Reva-khanda, while Matsya, Markandeya, Padma and Bhavishya are partial. Use Coverage & sources for edition details and gaps. The separate 801-link GRETIL discovery inventory is not imported text and includes non-Hindu literature.
+Not every Purana is complete. Partial or restricted collections remain clearly labelled in **Coverage & sources** rather than being represented as complete scripture editions.
 
-Source text, historical translation, prepared explanation and modern application are labelled separately. Retellings and application guides await specialist review. Historical English can be difficult for children; it is not advertised as a simple modern translation. GRETIL rights are CC BY-NC-SA; Wikisource transcription rights and source-page public-domain conditions are recorded. Project Gutenberg translations retain full source licence text in the archives. Sanskrit Documents has separate personal-study/research terms: do not assume all transcriptions have unrestricted redistribution rights.
+## Core product areas
 
-## Learning and conversation
+### Library / Reading Room
+Canonical source text and historical translations are kept distinct from generated explanations. Source, edition, coverage and rights metadata remain visible.
 
-Learning supports sequential practice, meanings where available, self-recording and scheduled recall review. A linked human recording for Gita 2.48 is attributed but not teacher-verified. A full verified pronunciation course is still missing.
+### Stories
+Prepared retellings and historical folktales are kept separate from scripture. Retellings are labelled as retellings and are not presented as canonical source text.
 
-Settings accepts all four provider keys: OpenRouter, Gemini, Groq and Grok. OpenRouter is the default gateway; a preferred provider is tried first, followed by other configured providers until one succeeds. Model names are editable, and connection checks retain readable provider errors. API keys and progress can be saved in an encrypted study profile with a passphrase. Railway mounts persistent storage at `/data` via `KATHAVEDA_STUDY_DIR`. Private questions are not stored in the public chapter cache. Shared chapter explanations are generated once and reused. Real provider access cannot be validated without the user’s key; request parsing and ordered fallback are covered by automated tests.
+### Learn & Review
+Sequential practice, meanings where available, self-recording, saved progress and scheduled recall review.
 
-## Games and remaining work
+### Converse
+Grounded conversation over stored literature with prepared local answers where available and provider-assisted answers otherwise. Supported providers include OpenRouter, Gemini, Groq and Grok, with ordered fallback across configured providers. Evidence links are shown after responses.
 
-Scripture-specific quizzes, character clues, dynasty links and event sequences support refreshable five- or ten-challenge rounds, streaks, lotus points and achievement feedback. Each game has 25 named learning stages. Gita stages 1–18 follow its chapters; Narayaneeyam stages follow its early dasakams and episodes; Bhagavatam stages focus on source episodes before later connection rounds. Broader source coverage within every stage, full verified pronunciation audio, specialist-reviewed simple meanings and complete source-edition coverage remain unfinished.
+### Games
+Scripture-specific quizzes, character clues, dynasty links and event sequences with refreshable rounds, streaks, lotus points, achievements and 25 learning stages.
 
-## Validation and imports
+### Study my text
+Session-private TXT, PDF and DOCX study uploads with search and provider-assisted explanation. Uploaded material is not added to the shared public corpus.
 
-`python -m unittest test_app test_study -q` checks all pages, database integrity, reading, next-verse navigation, refreshable games, question retention, encryption and ordered provider fallback. Import scripts require `lxml`; normal app operation reads shipped archives and does not require it. Import scripts preserve source attribution and electronic edition numbering.
+### Sources & integrity
+The coverage report exposes edition, source, rights, review state and known coverage gaps. A title existing in the catalogue never implies that every part of every edition is complete.
+
+## Source policy
+
+Tattvika separates:
+
+1. original/source transcription
+2. historical translation
+3. prepared explanation
+4. modern application
+5. story retelling
+
+One attributed source/edition is used within each stored collection. Alternative editions may coexist as separately named collections; they are not silently blended into a single canonical text.
+
+GRETIL, Wikisource, Project Gutenberg, Sanskrit Documents and other sources retain their respective attribution and reuse conditions. Do not infer unrestricted redistribution rights merely because a text is old.
+
+## Persistence and privacy
+
+Study profiles can persist progress and provider settings. Railway mounts persistent storage at `/data` through `KATHAVEDA_STUDY_DIR`. Private questions are not stored in the public chapter cache. Shared generated chapter explanations are cached separately.
+
+## Validation
+
+Run:
+
+```bash
+python -m unittest test_app test_study -q
+```
+
+The test suite covers pages, database integrity, reading navigation, game refresh behavior, question retention, encrypted profile handling and ordered provider fallback.
+
+## Local run
+
+Python 3.12 is recommended.
+
+```bash
+python -m pip install -r requirements.txt
+python build_database.py
+python -m streamlit run app.py
+```
+
+Normal operation reads the shipped attributed source archives. Import scripts may require additional parsing dependencies such as `lxml`.
+
+## Current quality bar
+
+Tattvika is being developed to the same product standard as BioSage: broad curated content, clear provenance, persistent study state, graceful provider fallback, usable non-AI paths, explicit incomplete-state handling, and features that work as connected parts of one literature system rather than isolated demos.
