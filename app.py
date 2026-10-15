@@ -1,163 +1,64 @@
-import csv,io,json,random,os,base64
+import csv,io,base64
 from pathlib import Path
 import streamlit as st
-from knowledge import CONTENT,works,passages,search,audit
-from providers import CONFIG,discuss,ProviderError
-from reader_ui import prepare_explanation
-from friendly_ui import reading_room,situations_ui,STORIES
+from knowledge import works,audit
 from games_ui import games_ui
-from settings_ui import profile_ui,settings_ui,active_settings,saved,save
-from chapter_guides import GITA
-from chanting_ui import chanting_study
+from settings_ui import profile_ui,settings_ui
+from experience_ui import explore_library,stories_experience,reflect_experience
+from learn_ui import learn_and_chant
+from converse_ui import converse_ui
+
 ROOT=Path(__file__).parent
 st.set_page_config(page_title='Tattvika · Read, understand, chant and reflect',page_icon='🪷',layout='wide',initial_sidebar_state='collapsed')
 st.markdown('''<style>
-.stApp{background:radial-gradient(circle at 85% 6%,#fff9c9 0 3%,transparent 3.2%),linear-gradient(145deg,#f8fff1 0%,#eaf7e7 52%,#f7f1df 100%);background-attachment:fixed}h1,h2,h3{color:#285c3a;font-family:Georgia,serif}p{line-height:1.65}div[data-testid="stVerticalBlockBorderWrapper"]{background:#ffffffe8;border-radius:20px;border:1px solid #c9dfc5;padding:5px;box-shadow:0 8px 26px #285c3a0d}.block-container{max-width:1280px;padding-top:1.1rem}h3{font-size:1.2rem!important}button{border-radius:999px!important}.rr-brand{display:flex;align-items:center;gap:16px;min-height:82px}.rr-brand img{width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 5px 10px #294a2a20)}.rr-brand h1{font-size:2rem!important;margin:0!important;line-height:1}.rr-brand p{margin:7px 0 0;color:#607663;letter-spacing:.08em;font-size:.84rem;text-transform:uppercase}.rr-nav-rule{height:1px;background:linear-gradient(90deg,transparent,#9ebd91,transparent);margin:8px 0 24px}.rr-long-reader{max-width:850px;margin:18px auto;padding:34px 40px;background:#fffef8;border:1px solid #d9ddc6;border-radius:18px;box-shadow:0 10px 30px #31573510;color:#2d332c;line-height:1.85;font-family:Georgia,serif}.rr-long-reader p{margin:0 0 1.15em}div[data-testid="stMetric"]{background:#fffceb;padding:16px;border-radius:16px}.rr-garden{padding:12px 18px;border-radius:18px;background:linear-gradient(90deg,#dff1d7,#fff6cd);border:1px solid #b9d0a9;color:#31543a;margin:8px 0 18px}.rr-game-map{padding:12px;border-radius:16px;background:#f4fae9;border:1px dashed #7ea36f;letter-spacing:.12em;text-align:center}.rr-book{min-height:250px;padding:22px;border-radius:22px;background:linear-gradient(145deg,#fffdf5,#edf7e8);border:1px solid #c7dbc0}.rr-kicker{letter-spacing:.14em;text-transform:uppercase;color:#6f806c;font-size:.72rem;font-weight:800}.stProgress>div>div{background:linear-gradient(90deg,#4e8c55,#d3a741)!important}@media(max-width:800px){.rr-brand img{width:58px;height:58px}.rr-brand h1{font-size:1.55rem!important}.rr-brand p{font-size:.68rem}.rr-long-reader{padding:22px}}@media(prefers-reduced-motion:no-preference){h1{animation:arrive .6s ease-out}.rr-garden{animation:breathe 4s ease-in-out infinite alternate}@keyframes arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes breathe{to{box-shadow:0 7px 28px #6b9a6030}}}</style>''',unsafe_allow_html=True)
+.stApp{background:radial-gradient(circle at 85% 4%,#fff7cb 0 3%,transparent 3.2%),linear-gradient(145deg,#f8fff1 0%,#edf8e8 48%,#fbf3df 100%);background-attachment:fixed}
+.block-container{max-width:1320px;padding-top:1.1rem;padding-bottom:3rem}h1,h2,h3{color:#285c3a;font-family:Georgia,serif}p{line-height:1.65}
+button{border-radius:999px!important}div[data-testid="stVerticalBlockBorderWrapper"]{background:#fffefa;border-radius:20px;border:1px solid #d4e3cb;box-shadow:0 8px 24px #28452f0c}
+.rr-brand{display:flex;align-items:center;gap:16px;min-height:82px}.rr-brand img{width:76px;height:76px;object-fit:contain;filter:drop-shadow(0 5px 10px #294a2a20)}.rr-brand h1{font-size:2rem!important;margin:0!important;line-height:1}.rr-brand p{margin:7px 0 0;color:#607663;letter-spacing:.08em;font-size:.84rem;text-transform:uppercase}.rr-nav-rule{height:1px;background:linear-gradient(90deg,transparent,#9ebd91,transparent);margin:8px 0 24px}
+.tv-kicker{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#827451;font-weight:800}.tv-section-hero,.tv-reader-hero{padding:28px 32px;border-radius:26px;background:linear-gradient(125deg,#f3f9e9,#fff7de 58%,#f1ead8);border:1px solid #d9e4c9;margin:8px 0 20px}.tv-section-hero h2,.tv-reader-hero h2{font-size:2.15rem!important;margin:.3rem 0}.tv-section-hero p,.tv-reader-hero p{max-width:900px;color:#53695a;font-size:1.03rem}.tv-library-card{min-height:285px;padding:20px;border-radius:22px;background:#fffefa;border:1px solid #d7e2ce;box-shadow:0 8px 24px #28452f0c;margin-bottom:12px}
+.stProgress>div>div{background:linear-gradient(90deg,#4e8c55,#d3a741)!important}@media(max-width:800px){.rr-brand img{width:58px;height:58px}.rr-brand h1{font-size:1.55rem!important}.rr-brand p{font-size:.68rem}.tv-section-hero,.tv-reader-hero{padding:22px}}
+</style>''',unsafe_allow_html=True)
+
 logo_data=base64.b64encode((ROOT/'assets/logo.svg').read_bytes()).decode()
 from ambience import ambience_ui
 brand,sound=st.columns([5,2])
 with brand:
- st.markdown(f'<div class="rr-brand"><img alt="Tattvika logo" src="data:image/svg+xml;base64,{logo_data}"><div><h1>Tattvika</h1><p>Scripture · stories · chanting · reflection</p></div></div>',unsafe_allow_html=True)
+    st.markdown(f'<div class="rr-brand"><img alt="Tattvika logo" src="data:image/svg+xml;base64,{logo_data}"><div><h1>Tattvika</h1><p>Scripture · stories · chanting · reflection</p></div></div>',unsafe_allow_html=True)
 with sound:ambience_ui()
 from navigation import top_navigation
 page=top_navigation()
 st.markdown('<div class="rr-nav-rule"></div>',unsafe_allow_html=True)
+
 if page=='Settings':profile_ui(location=st)
-family=False
-W=works();titles={w['id']:w['title'] for w in W}
-G=CONTENT['guidance']['guidance'];S=STORIES
-journal=st.session_state.setdefault('_journal',{})
-for k,v in list(st.session_state.items()):
- if k.startswith(('reflection_','nextstep_')) or any(k.startswith(g['id']+'_') for g in G):journal[k]=v
-for k,v in journal.items():
- if k not in st.session_state:st.session_state[k]=v
-def source(r):
- st.caption(r['reference'])
- with st.expander('Source details'):
-  st.write('Source provenance is available here without leaving Tattvika. Full source links are collected separately on the Sources page.')
-  st.code(r.get('source_url',r.get('sourceUrl','Source URL not recorded')),language=None)
-def render_passage(r):
- st.markdown('### '+r['reference']);st.text(r['original'])
- if r.get('transliteration') and r['transliteration']!=r['original']:
-  with st.expander('IAST transliteration'):st.text(r['transliteration'])
- meta=json.loads(r['metadata']);meaning=meta.get('meaning')
- if meaning and not meaning.startswith('An editorially reviewed'):st.info(('Historical translation: ' if r['work_id']=='gita-besant' else 'Stored meaning: ')+meaning)
- else:st.caption('A reviewed English meaning is not stored for this passage yet.')
- st.caption(meta.get('reviewStatus','Source transcription; not independently collated'));source(r)
 
 if page=='Home':
- from home_ui import home_ui
- home_ui()
-elif page=='Coverage & sources':
- st.header('What is actually available?')
- st.warning('The full set of Puranas is not complete. These are attributed electronic transcriptions, not independently verified critical editions. A title in the catalogue does not mean every part is present.')
- report=audit();st.dataframe(report,hide_index=True,width='stretch')
- output=io.StringIO();writer=csv.DictWriter(output,fieldnames=report[0].keys());writer.writeheader();writer.writerows(report)
- st.download_button('Download coverage report',output.getvalue(),'tattvika-coverage.csv','text/csv')
- st.caption('Internal numbering gaps only compare the smallest and largest stored numbers. Entire absent books and missing chapters after the last stored number must be checked against the edition inventory.')
- for w in W:
-  with st.expander(w['title']+' · edition and rights'):
-   for label,key in [('Edition','edition'),('Coverage','coverage'),('Source','sourceName'),('Rights','rights'),('Review','note')]:st.write('**'+label+'**: '+w.get(key,'Not recorded'))
-   st.link_button('Source edition',w['sourceUrl'])
+    from home_ui import home_ui
+    home_ui()
 elif page=='Reading room':
- reading_room()
+    explore_library()
 elif page=='Story garden':
- st.header('Take time with a story')
- themes=sorted({t for s in S for t in s['themes']});theme=st.selectbox('Theme',['All']+themes)
- choices=[s for s in S if theme=='All' or theme in s['themes']]
- sid=st.selectbox('Choose a story',[s['id'] for s in choices],format_func=lambda i:next(s['title'] for s in choices if s['id']==i))
- s=next(s for s in S if s['id']==sid);st.subheader(s['title']);st.caption(s['book']+' '+s['ref']+' · prepared retelling, awaiting scholarly review')
- st.markdown(s['child'] if family else s['text']);st.info(s['reflection']);st.link_button('Compare with source chapters',s['url'])
- st.text_area('A family conversation or personal reflection',key='reflection_'+sid)
+    stories_experience()
 elif page=='Situations':
- situations_ui()
+    reflect_experience()
 elif page=='Learn & chant':
- st.header('Learn, understand and chant')
- st.caption('Do not memorise sound alone. Tattvika keeps the text, transliteration, meaning and study explanation together while keeping their provenance separate.')
- courses=[i for i in ['gita','gita-besant','vishnu','lalita','narayaneeyam'] if i in titles]
- wid=st.selectbox('Course',courses,format_func=lambda i:titles[i],key='learning_course');units=passages(wid)
- position_key='position_'+wid
- if position_key not in st.session_state:st.session_state[position_key]=min(saved('chant-progress',{}).get(position_key,0),len(units)-1)
- def move(delta):st.session_state[position_key]=max(0,min(len(units)-1,st.session_state[position_key]+delta))
- if 'unit_'+wid not in st.session_state:st.session_state['unit_'+wid]=st.session_state[position_key]+1
- idx=st.number_input('Current reading unit',1,len(units),key='unit_'+wid)
- if idx-1!=st.session_state[position_key]:st.session_state[position_key]=idx-1
- r=units[st.session_state[position_key]];st.progress((idx-1)/len(units));st.caption(f'{idx} of {len(units)} · {r["reference"]}')
- st.write('1. Read the unit slowly. 2. Understand its meaning. 3. Repeat it aloud. 4. Hide the text and recall it. 5. Join it to the previous unit and review both.')
- reveal=st.toggle('Show text while practising',value=True)
- if reveal:render_passage(r)
- else:st.info('Try from memory, then reveal the text to compare.')
- from pronunciation_ui import pronunciation_ui
- pronunciation_ui(r)
- chanting_study(r,wid,titles[wid])
- def advance():
-  st.session_state['practised_'+r['id']]=True;move(1);st.session_state['unit_'+wid]=st.session_state[position_key]+1
- a,b=st.columns(2)
- a.button('Previous unit',on_click=lambda:(move(-1),st.session_state.update({'unit_'+wid:st.session_state[position_key]+1})),disabled=idx==1)
- b.button('Understood & practised · learn next',on_click=advance,disabled=idx==len(units))
- if st.session_state.get('_profile') and st.button('Save learning progress to my profile'):
-  save('chant-progress',{k:v for k,v in st.session_state.items() if k.startswith(('position_','practised_'))});st.success('Progress saved.')
- st.caption('Use the same profile to save progress across visits. Narayaneeyam is grouped by dasakam. Recorded pronunciation is still being assembled; do not treat generated speech as a pronunciation teacher.')
- with st.expander('Pronunciation essentials'):
-  st.write('ā, ī and ū are long vowels: hold them longer than a, i and u. In kh, gh, th and dh, h marks a breath after the consonant. ṭ and ḍ use the tongue curled back. Listen to a trained reciter before practising a difficult word.')
- progress={k:v for k,v in st.session_state.items() if k.startswith(('position_','practised_'))}
- st.download_button('Download my progress',json.dumps(progress),'tattvika-chant-progress.json','application/json')
- uploaded=st.file_uploader('Restore my progress',type=['json'])
- def restore():
-  try:
-   restored=json.load(uploaded)
-   for k,v in restored.items():
-    if k.startswith('position_') and isinstance(v,int) and v>=0:
-     course=k.removeprefix('position_')
-     if course in courses:st.session_state[k]=min(v,len(passages(course))-1);st.session_state['unit_'+course]=st.session_state[k]+1
-    elif k.startswith('practised_') and isinstance(v,bool):st.session_state[k]=v
-  except (ValueError,AttributeError):st.session_state['restore_error']='This progress file could not be read.'
- if uploaded:st.button('Restore',on_click=restore)
- if st.session_state.get('restore_error'):st.error(st.session_state['restore_error'])
+    learn_and_chant()
 elif page=='Games':
- games_ui()
-elif page=='Study my text':
- from upload_ui import upload_ui
- upload_ui()
-elif page=='Settings':
- settings_ui()
+    games_ui()
 elif page=='Converse':
- st.header('Converse with Tattvika')
- st.caption('Ask about a story, verse, name, teaching or difficulty. Answers use stored scripture passages and your configured provider fallback.')
- settings=active_settings()
- provider,key,model=settings[0]
- connected=[s[0] for s in settings if s[1]]
- if connected:st.success('Ready · fallback order: '+' → '.join(connected))
- else:
-  st.info('No conversation key is connected. Prepared library answers still work; connect a provider for new questions.')
-  if st.button('Open Settings to connect AI'):st.session_state.page='Settings';st.rerun()
- st.markdown('**Try a question**')
- starters=['What is Narayaneeyam?','What does this Vishnu Sahasranama name mean?','How can I make a difficult decision?','Help me understand Bhagavad Gita 2.47.']
- cols=st.columns(2)
- for i,prompt in enumerate(starters):
-  if cols[i%2].button(prompt,key='starter_'+str(i),use_container_width=True):st.session_state.pending_question=prompt;st.rerun()
- if 'history' not in st.session_state:st.session_state['history']=[]
- for m in st.session_state['history']:
-  with st.chat_message(m['role']):st.markdown(m['content'])
- if st.session_state.get('_conversation_question'):
-  st.session_state['pending_question']=st.session_state.pop('_conversation_question')
- question=st.text_area('Your question',key='pending_question')
- if st.button('Send question',disabled=not question.strip()):
-  prepared=next((a for a in CONTENT['corpus']['corpusAnswers'] if a['question']==question.lower().strip().rstrip('?!.') and not a['id'].startswith('guidance-')),None)
-  context=search(question)
-  gid=st.session_state.get('conversation_context');g=next((g for g in G if g['id']==gid),None)
-  if g:context=[r for r in passages('gita') if r['reference'].removeprefix('Bhagavad Gita ') in g['gita']]+context
-  if st.session_state.get('_reading_context'):context=st.session_state['_reading_context']+context
-  try:
-   if prepared:answer,used=prepared['answer'],'prepared local answer (no AI call)'
-   else:
-    with st.spinner('Considering your question…'):answer,used=discuss(question,context,st.session_state['history'],settings)
-   st.session_state['history'] += [{'role':'user','content':question},{'role':'assistant','content':answer}]
-   with st.chat_message('assistant'):st.markdown(answer)
-   st.caption('Answered by '+used+('' if prepared else ' · model interpretation, not an independently reviewed commentary'))
-   for i,r in enumerate(context,1):st.markdown(f'[{i}] {r["reference"]}')
-  except ProviderError as e:st.error(str(e))
- if st.button('Clear conversation'):
-  for k in list(st.session_state):
-   if k in ('history','pending_question'):del st.session_state[k]
-  st.rerun()
+    converse_ui()
+elif page=='Study my text':
+    from upload_ui import upload_ui
+    upload_ui()
+elif page=='Settings':
+    settings_ui()
+elif page=='Coverage & sources':
+    st.markdown('''<div class="tv-section-hero"><div class="tv-kicker">SOURCES & INTEGRITY</div><h2>See exactly what Tattvika contains.</h2><p>This audit page is intentionally separate from the reading flow. Coverage, edition, source and review status remain inspectable without sending a learner away from a verse or story.</p></div>''',unsafe_allow_html=True)
+    report=audit()
+    st.dataframe(report,hide_index=True,width='stretch')
+    output=io.StringIO();writer=csv.DictWriter(output,fieldnames=report[0].keys());writer.writeheader();writer.writerows(report)
+    st.download_button('Download coverage report',output.getvalue(),'tattvika-coverage.csv','text/csv')
+    st.warning('A catalogue title does not automatically mean a complete critical edition. Tattvika reports the coverage actually stored in this build.')
+    for w in works():
+        with st.expander(w['title']+' · edition and rights'):
+            for label,key in [('Edition','edition'),('Coverage','coverage'),('Source','sourceName'),('Rights','rights'),('Review','note')]:st.write('**'+label+'**: '+w.get(key,'Not recorded'))
+            if w.get('sourceUrl'):st.link_button('Open source edition',w['sourceUrl'])
